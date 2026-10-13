@@ -136,7 +136,7 @@
     <!-- 2. CHANNELS & DIRECT MESSAGES SIDEBAR -->
     <aside id="channels-sidebar" class="w-60 bg-[#2b2d31] border-r border-[#1f2023] flex flex-col shrink-0 z-10 transition-transform duration-200 absolute md:relative inset-y-0 left-0 md:left-0 -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
       
-      <!-- Server Header / Navigation -->
+      <!-- Server Header -->
       <div class="p-3 font-bold text-xs uppercase tracking-wider text-gray-300 flex justify-between items-center border-b border-[#1f2023]">
         <span id="current-server-title" class="truncate">SDR Central</span>
         <div class="flex items-center space-x-1">
@@ -210,7 +210,7 @@
       <!-- API Missing Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 370 for cross-network sync!</span>
+        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 428 for cross-network sync!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -245,6 +245,7 @@
           <button onclick="wrapWholeMessage('spoiler')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Spoiler</button>
           <div class="h-3 w-[1px] bg-gray-700 shrink-0"></div>
           <button onclick="insertCommand('/poll &quot;Question&quot; &quot;Opt1&quot; &quot;Opt2&quot;')" class="hover:text-indigo-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-poll mr-1"></i>Poll</button>
+          <button onclick="insertCommand('/wordle')" class="hover:text-green-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-[#000] text-green-400 mr-1"></i>Wordle</button>
           <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
           <button onclick="insertCommand('/rps')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-hand-back-fist mr-1"></i>RPS</button>
         </div>
@@ -255,7 +256,7 @@
             <input type="file" id="file-input" onchange="handleFileSelect(event)" class="hidden">
           </label>
 
-          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
+          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel... (Try /wordle or /poll)" autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
 
           <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 shrink-0">
             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -274,7 +275,7 @@
 
   </div>
 
-  <!-- CALL OVERLAY GRID MODAL WITH MIC DEVICE SELECTOR -->
+  <!-- CALL OVERLAY GRID MODAL WITH MIC AND HEADPHONE DEVICE SELECTOR -->
   <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
     <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
       <div class="flex items-center space-x-2">
@@ -301,13 +302,22 @@
       </div>
     </div>
 
-    <!-- Call Controls & Mic Selector -->
+    <!-- Call Controls & Hardware Selectors -->
     <div class="p-4 bg-[#1e1f22] border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
-      <div class="flex items-center space-x-2 w-full md:w-auto">
-        <i class="fa-solid fa-microphone text-gray-400 text-xs"></i>
-        <select id="mic-select" onchange="changeAudioInput()" class="bg-[#111214] text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none w-full md:w-64">
-          <option value="">Default Microphone</option>
-        </select>
+      <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+        <div class="flex items-center space-x-2 w-full md:w-auto">
+          <i class="fa-solid fa-microphone text-gray-400 text-xs"></i>
+          <select id="mic-select" onchange="changeAudioInput()" class="bg-[#111214] text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none w-full md:w-48">
+            <option value="">Default Microphone</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2 w-full md:w-auto">
+          <i class="fa-solid fa-headphones text-gray-400 text-xs"></i>
+          <select id="speaker-select" onchange="changeAudioOutput()" class="bg-[#111214] text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none w-full md:w-48">
+            <option value="">Default Output/Headphones</option>
+          </select>
+        </div>
       </div>
 
       <div class="flex items-center space-x-4">
@@ -472,6 +482,8 @@
     let typingTimer = null;
     let activeMediaStream = null;
 
+    const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
+
     let user = {
       id: "usr_" + Math.random().toString(36).substring(2, 9),
       name: localStorage.getItem('sdr_name') || "User_" + Math.floor(100 + Math.random() * 900),
@@ -506,7 +518,7 @@
       renderChannels();
       loadMessagesForCurrentChannel();
       initAbly();
-      populateMicrophones();
+      populateMicrophonesAndSpeakers();
 
       const savedTheme = localStorage.getItem('sdr_theme') || 'dark';
       setTheme(savedTheme);
@@ -851,6 +863,43 @@
         `;
       }
 
+      if (msg.type === 'wordle') {
+        let guessesHTML = '';
+        (msg.gameData.guesses || []).forEach(g => {
+          let tiles = '';
+          g.result.forEach((res, i) => {
+            const bg = res === 'G' ? 'bg-emerald-600' : (res === 'Y' ? 'bg-amber-500' : 'bg-gray-700');
+            tiles += `<span class="${bg} text-white font-bold w-6 h-6 rounded flex items-center justify-center text-xs uppercase">${g.word[i]}</span>`;
+          });
+          guessesHTML += `<div class="flex space-x-1 my-1">${tiles}<span class="text-[10px] text-gray-400 ml-2 self-center">${g.user}</span></div>`;
+        });
+
+        const status = msg.gameData.solved 
+          ? `🎉 Solved by ${msg.gameData.winner}! Word was: <strong>${msg.gameData.target}</strong>`
+          : 'Guess the 5-letter word below:';
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-green-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-green-500/20 text-green-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🟩 WORDLE MULTIPLAYER</span>
+              </div>
+              <p class="text-xs text-gray-300 mb-2">${status}</p>
+              <div class="mb-3">${guessesHTML}</div>
+              ${!msg.gameData.solved ? `
+                <form onsubmit="submitWordleGuess(event, '${chanId}', '${msg.msgId}')" class="flex space-x-2">
+                  <input type="text" maxlength="5" placeholder="5 LETTERS" class="bg-[#111214] border border-gray-700 rounded-lg px-2 py-1 text-xs text-white uppercase focus:outline-none focus:border-green-500 flex-1">
+                  <button type="submit" class="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1 rounded-lg font-bold transition">Guess</button>
+                </form>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
       if (msg.type === 'tictactoe') {
         let boardHTML = '<div class="grid grid-cols-3 gap-1 w-36 my-2">';
         msg.gameData.board.forEach((cell, cellIdx) => {
@@ -879,6 +928,23 @@
       }
 
       if (msg.type === 'rps') {
+        let p1 = msg.gameData.p1;
+        let p2 = msg.gameData.p2;
+
+        let status = 'Waiting for players...';
+        if (p1 && p2) {
+          if (p1.move === p2.move) status = `🤝 Draw! Both chose ${p1.move}`;
+          else if (
+            (p1.move === '✊' && p2.move === '✌️') ||
+            (p1.move === '✋' && p2.move === '✊') ||
+            (p1.move === '✌️' && p2.move === '✋')
+          ) {
+            status = `🎉 ${p1.name} won! (${p1.move} beats ${p2.move})`;
+          } else {
+            status = `🎉 ${p2.name} won! (${p2.move} beats ${p1.move})`;
+          }
+        }
+
         return `
           <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
             <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
@@ -893,7 +959,7 @@
                 <button onclick="playRPS('${chanId}', '${msg.msgId}', '✋')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✋</button>
                 <button onclick="playRPS('${chanId}', '${msg.msgId}', '✌️')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✌️</button>
               </div>
-              <p class="text-xs text-gray-300">${msg.gameData.result || 'Pick your move!'}</p>
+              <p class="text-xs text-gray-300">${status}</p>
             </div>
           </div>
         `;
@@ -998,6 +1064,20 @@
         }
       }
 
+      if (text.startsWith('/wordle')) {
+        const word = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
+        const wordleMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'wordle',
+          gameData: { target: word, guesses: [], solved: false, winner: null },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(wordleMsg);
+        input.value = '';
+        return;
+      }
+
       if (text.startsWith('/tictactoe')) {
         const gameMsg = {
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
@@ -1016,7 +1096,7 @@
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
           user: user,
           type: 'rps',
-          gameData: { moves: {}, result: null },
+          gameData: { p1: null, p2: null },
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         sendOrPublish(rpsMsg);
@@ -1058,6 +1138,47 @@
       if (msg.user.id !== user.id) playAudio();
     }
 
+    function submitWordleGuess(e, chanId, msgId) {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const guess = input.value.trim().toUpperCase();
+      if (guess.length !== 5) return;
+
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg || msg.gameData.solved) return;
+
+      const target = msg.gameData.target;
+      let res = Array(5).fill('B');
+      let targetArr = target.split('');
+
+      for (let i = 0; i < 5; i++) {
+        if (guess[i] === target[i]) {
+          res[i] = 'G';
+          targetArr[i] = null;
+        }
+      }
+      for (let i = 0; i < 5; i++) {
+        if (res[i] !== 'G' && targetArr.includes(guess[i])) {
+          res[i] = 'Y';
+          targetArr[targetArr.indexOf(guess[i])] = null;
+        }
+      }
+
+      msg.gameData.guesses.push({ word: guess, result: res, user: user.name });
+      if (guess === target) {
+        msg.gameData.solved = true;
+        msg.gameData.winner = user.name;
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'wordle', msgId, gameData: msg.gameData });
+      }
+    }
+
     function playTicTacToe(chanId, msgId, cellIdx) {
       const messages = state.messages[chanId] || [];
       const msg = messages.find(m => m.msgId === msgId);
@@ -1091,21 +1212,17 @@
       const msg = messages.find(m => m.msgId === msgId);
       if (!msg) return;
 
-      const botChoice = ['✊', '✋', '✌️'][Math.floor(Math.random() * 3)];
-      let result = '';
-      if (move === botChoice) result = `Draw! Both picked ${move}`;
-      else if ((move === '✊' && botChoice === '✌️') || (move === '✋' && botChoice === '✊') || (move === '✌️' && botChoice === '✋')) {
-        result = `You Won! ${move} beats ${botChoice}`;
-      } else {
-        result = `You Lost! ${botChoice} beats ${move}`;
+      if (!msg.gameData.p1) {
+        msg.gameData.p1 = { id: user.id, name: user.name, move };
+      } else if (!msg.gameData.p2 && msg.gameData.p1.id !== user.id) {
+        msg.gameData.p2 = { id: user.id, name: user.name, move };
       }
 
-      msg.gameData.result = result;
       saveState();
       loadMessagesForCurrentChannel();
 
       if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'rps', msgId, result });
+        currentChannelObj.publish('mutation', { type: 'rps', msgId, gameData: msg.gameData });
       }
     }
 
@@ -1153,10 +1270,12 @@
       if (data.type === 'pollVote') {
         if (!msg.pollData.votes) msg.pollData.votes = {};
         msg.pollData.votes[data.optIdx] = (msg.pollData.votes[data.optIdx] || 0) + 1;
+      } else if (data.type === 'wordle') {
+        msg.gameData = data.gameData;
       } else if (data.type === 'tictactoe') {
         msg.gameData = data.gameData;
       } else if (data.type === 'rps') {
-        msg.gameData.result = data.result;
+        msg.gameData = data.gameData;
       } else if (data.type === 'reaction') {
         if (!msg.reactions) msg.reactions = {};
         msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1;
@@ -1206,13 +1325,21 @@
       document.getElementById('pinned-drawer').classList.toggle('hidden');
     }
 
-    async function populateMicrophones() {
+    async function populateMicrophonesAndSpeakers() {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const micSelect = document.getElementById('mic-select');
+        const speakerSelect = document.getElementById('speaker-select');
+        
         micSelect.innerHTML = '<option value="">Default Microphone</option>';
+        speakerSelect.innerHTML = '<option value="">Default Output/Headphones</option>';
+
         devices.filter(d => d.kind === 'audioinput').forEach(d => {
           micSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Microphone ' + (micSelect.length)}</option>`;
+        });
+
+        devices.filter(d => d.kind === 'audiooutput').forEach(d => {
+          speakerSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Speaker/Headphone ' + (speakerSelect.length)}</option>`;
         });
       } catch (e) {}
     }
@@ -1225,6 +1352,16 @@
       try {
         activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
       } catch (e) {}
+    }
+
+    async function changeAudioOutput() {
+      const deviceId = document.getElementById('speaker-select').value;
+      const videoEl = document.getElementById('local-video');
+      if (videoEl && typeof videoEl.setSinkId === 'function' && deviceId) {
+        try {
+          await videoEl.setSinkId(deviceId);
+        } catch (e) {}
+      }
     }
 
     async function joinVoiceCall() {
