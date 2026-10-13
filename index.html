@@ -559,6 +559,13 @@
       return `${state.currentServer}_${state.currentChannel}`;
     }
 
+    function getPubSubChannelName(chanKey) {
+      if (chanKey.startsWith('dm_')) {
+        return `sdr_${chanKey}`;
+      }
+      return `sdr_${chanKey}`;
+    }
+
     function initAbly() {
       if (!ABLY_API_KEY || ABLY_API_KEY === "YOUR_ABLY_API_KEY_HERE") {
         document.getElementById('api-warning').classList.remove('hidden');
@@ -590,13 +597,12 @@
       if (!ably) return;
       if (currentChannelObj) currentChannelObj.unsubscribe();
 
-      let chanKey = activeTab === 'dms' && activeDMTarget 
-        ? `sdr_dm_${[user.id, activeDMTarget.id].sort().join('_')}`
-        : `sdr_${state.currentServer}_${state.currentChannel}`;
+      const activeKey = getActiveChannelKey();
+      const pubSubName = getPubSubChannelName(activeKey);
 
-      currentChannelObj = ably.channels.get(chanKey);
+      currentChannelObj = ably.channels.get(pubSubName);
 
-      currentChannelObj.subscribe('msg', (msg) => handleIncomingMessage(msg.data, chanKey));
+      currentChannelObj.subscribe('msg', (msg) => handleIncomingMessage(msg.data, activeKey));
       currentChannelObj.subscribe('mutation', (msg) => handleIncomingMutation(msg.data));
       currentChannelObj.subscribe('typing', (msg) => {
         if (msg.data.userId !== user.id) showTypingIndicator(msg.data.userName);
@@ -1104,7 +1110,8 @@
             user: user,
             type: 'poll',
             pollData: { question, options, votes: {} },
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            channelKey: getActiveChannelKey()
           };
           sendOrPublish(pollMsg);
           input.value = '';
@@ -1119,7 +1126,8 @@
           user: user,
           type: 'wordle',
           gameData: { target: word, guesses: [], solved: false, winner: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
         };
         sendOrPublish(wordleMsg);
         input.value = '';
@@ -1132,7 +1140,8 @@
           user: user,
           type: 'tictactoe',
           gameData: { board: Array(9).fill(null), turn: "X", winner: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
         };
         sendOrPublish(gameMsg);
         input.value = '';
@@ -1145,7 +1154,8 @@
           user: user,
           type: 'rps',
           gameData: { p1: null, p2: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
         };
         sendOrPublish(rpsMsg);
         input.value = '';
@@ -1156,7 +1166,8 @@
         msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
         user: user,
         text: text,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        channelKey: getActiveChannelKey()
       };
 
       sendOrPublish(msg);
@@ -1169,7 +1180,8 @@
             msgId: "m_" + Date.now(),
             user: activeDMTarget,
             text: `Hey! I received your message: "${text}". SDRChat DMs are working smoothly! 🚀`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            channelKey: getActiveChannelKey()
           };
           handleIncomingMessage(replyMsg, getActiveChannelKey());
         }, 1000);
@@ -1178,6 +1190,7 @@
 
     function sendOrPublish(msg) {
       const activeKey = getActiveChannelKey();
+      msg.channelKey = activeKey;
       handleIncomingMessage(msg, activeKey);
       if (ably && currentChannelObj) {
         currentChannelObj.publish('msg', msg);
@@ -1186,7 +1199,7 @@
 
     function handleIncomingMessage(msg, incomingChanKey) {
       const currentActiveKey = getActiveChannelKey();
-      const targetChanKey = incomingChanKey || currentActiveKey;
+      const targetChanKey = msg.channelKey || incomingChanKey || currentActiveKey;
 
       if (!state.messages[targetChanKey]) state.messages[targetChanKey] = [];
 
@@ -1478,7 +1491,8 @@
           text: `Attached media: ${file.name}`,
           image: isVideo ? null : event.target.result,
           video: isVideo ? event.target.result : null,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
         };
         sendOrPublish(msg);
       };
