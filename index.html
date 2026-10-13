@@ -499,7 +499,6 @@
 
     const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
 
-    // Default built-in peers for offline/local mode testing
     const DEFAULT_BOT_PEERS = [
       { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" },
       { id: "usr_sarah", name: "Sarah_Gamer", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Sarah" },
@@ -513,7 +512,7 @@
     };
 
     let activeTab = 'channels'; // 'channels' or 'dms'
-    let activeDMTarget = null; // target user object when in DM mode
+    let activeDMTarget = null;
 
     let state = JSON.parse(localStorage.getItem('sdr_state')) || {
       servers: {
@@ -872,8 +871,8 @@
 
       if (msg.type === 'poker') {
         let playersHTML = '';
-        let pot = msg.gameData.pot || 0;
-        let community = msg.gameData.community || ['🎴', '🎴', '🎴', '🎴', '🎴'];
+        let pot = msg.gameData.pot || 150;
+        let community = msg.gameData.community || ['🂡', '🂤', '🂩', '🂠', '🂠'];
 
         (msg.gameData.players || []).forEach(p => {
           playersHTML += `
@@ -1123,7 +1122,6 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // STEALTH DELETEALL COMMAND: Full reset with zero trace in chat
       if (text === '!deleteall') {
         localStorage.clear();
         location.reload();
