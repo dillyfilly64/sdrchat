@@ -255,11 +255,9 @@
           <div class="h-3 w-[1px] bg-gray-700 shrink-0"></div>
           <button onclick="insertCommand('/poker')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-dice text-amber-400 mr-1"></i>Poker</button>
           <button onclick="insertCommand('/chess')" class="hover:text-purple-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-chess text-purple-400 mr-1"></i>Chess</button>
-          <button onclick="insertCommand('/wordle')" class="hover:text-green-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad text-green-400 mr-1"></i>Wordle</button>
-          <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
         </div>
 
-        <form id="chat-form" onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
+        <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
           <label class="text-gray-400 hover:text-white cursor-pointer text-lg transition" title="Attach Image or Video File">
             <i class="fa-solid fa-circle-plus"></i>
             <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
@@ -492,12 +490,6 @@
     let activeMediaStream = null;
     let screenShareStream = null;
 
-    const DEFAULT_BOT_PEERS = [
-      { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" },
-      { id: "usr_sarah", name: "Sarah_Gamer", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Sarah" },
-      { id: "usr_cyberbot", name: "CyberBot", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberBot" }
-    ];
-
     let user = {
       id: "usr_" + Math.random().toString(36).substring(2, 9),
       name: localStorage.getItem('sdr_name') || "User_" + Math.floor(100 + Math.random() * 900),
@@ -523,9 +515,7 @@
       currentServer: "sdr-central",
       currentChannel: "general",
       messages: {},
-      dms: {
-        "usr_alex": { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" }
-      }
+      dms: {}
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -615,34 +605,24 @@
         });
       }
 
-      DEFAULT_BOT_PEERS.forEach(b => memberMap.set(b.id, b));
+      memberMap.set(user.id, user);
       document.getElementById('member-count').innerText = memberMap.size || 1;
 
-      let html = `
-        <div class="flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-[#1e1f22]">
-          <div class="relative">
-            <img src="${user.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
-            <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
-          </div>
-          <span class="text-xs font-semibold text-gray-200 truncate">${user.name} (You)</span>
-        </div>
-      `;
-
+      let html = '';
       memberMap.forEach((mUser, mId) => {
-        if (mId !== user.id) {
-          html += `
-            <button onclick="startDirectMessage('${mUser.id}', '${mUser.name}', '${mUser.avatar}')" class="w-full flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#1e1f22] hover:bg-[#35373c] transition group">
-              <div class="flex items-center space-x-2 min-w-0">
-                <div class="relative shrink-0">
-                  <img src="${mUser.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
-                  <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
-                </div>
-                <span class="text-xs font-semibold text-gray-300 truncate">${mUser.name}</span>
+        const isSelf = mId === user.id;
+        html += `
+          <div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#1e1f22]">
+            <div class="flex items-center space-x-2 min-w-0">
+              <div class="relative shrink-0">
+                <img src="${mUser.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+                <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
               </div>
-              <i class="fa-solid fa-message text-[10px] text-gray-500 group-hover:text-indigo-400 transition"></i>
-            </button>
-          `;
-        }
+              <span class="text-xs font-semibold text-gray-200 truncate">${mUser.name} ${isSelf ? '(You)' : ''}</span>
+            </div>
+            ${!isSelf ? `<button onclick="startDirectMessage('\${mUser.id}', '${mUser.name}', '${mUser.avatar}')" class="text-gray-400 hover:text-indigo-400 text-xs"><i class="fa-solid fa-message"></i></button>` : ''}
+          </div>
+        `;
       });
 
       list.innerHTML = html;
@@ -683,7 +663,7 @@
       const dmKeys = Object.keys(state.dms);
       
       if (dmKeys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click any user in Online Peers to DM!</p>';
+        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click message icon on peers to DM!</p>';
         return;
       }
 
@@ -851,19 +831,35 @@
       updatePinnedList();
     }
 
+    function formatCard(cardStr) {
+      // e.g. "3H" -> "3<span class='text-red-500'>♥</span>"
+      const rank = cardStr.slice(0, -1);
+      const suit = cardStr.slice(-1);
+      let suitSymbol = suit;
+      let colorClass = 'text-gray-100';
+
+      if (suit === 'H') { suitSymbol = '♥'; colorClass = 'text-red-500 font-bold'; }
+      else if (suit === 'D') { suitSymbol = '♦'; colorClass = 'text-red-500 font-bold'; }
+      else if (suit === 'S') { suitSymbol = '♠'; colorClass = 'text-gray-100 font-bold'; }
+      else if (suit === 'C') { suitSymbol = '♣'; colorClass = 'text-gray-100 font-bold'; }
+
+      return `<span class="bg-[#1e1f22] border border-gray-700 px-1.5 py-0.5 rounded text-xs inline-block">${rank}<span class="${colorClass}">${suitSymbol}</span></span>`;
+    }
+
     function renderMessageHTML(msg, idx, isSequential) {
       const chanId = getActiveChannelKey();
 
       if (msg.type === 'poker') {
         let playersHTML = '';
         let pot = msg.gameData.pot || 150;
-        let community = msg.gameData.community || ['🂡', '🂤', '🂩', '🂠', '🂠'];
+        let communityFormatted = (msg.gameData.community || ['3H', '7S', 'QD', '2C', '9H']).map(c => formatCard(c)).join(' ');
 
         (msg.gameData.players || []).forEach(p => {
+          let pCards = (p.cards || ['AS', 'KH']).map(c => formatCard(c)).join(' ');
           playersHTML += `
             <div class="flex justify-between items-center bg-[#1e1f22] p-2 rounded-xl mb-1 border border-gray-700/50 text-xs">
               <span class="font-bold text-white">${p.name}</span>
-              <span class="text-amber-400 font-mono">💵 $${p.chips} | Cards: ${p.cards.join(' ')}</span>
+              <span class="text-amber-400 font-mono">💵 $${p.chips} | Cards: ${pCards}</span>
             </div>
           `;
         });
@@ -875,11 +871,11 @@
               <div class="flex items-center space-x-2 mb-2">
                 <span class="font-bold text-xs text-amber-400">${msg.user.name}'s Table</span>
                 <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♠️ POKER TABLE</span>
+                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♠️ TEXAS HOLD'EM</span>
               </div>
               <div class="bg-emerald-900/40 border border-emerald-500/30 p-3 rounded-xl mb-3 text-center">
                 <div class="text-[11px] text-emerald-300 uppercase tracking-widest font-bold mb-1">Pot: $${pot}</div>
-                <div class="text-lg tracking-wider font-mono">${community.join(' ')}</div>
+                <div class="text-sm tracking-wider font-mono flex justify-center gap-1">${communityFormatted}</div>
               </div>
               <div class="mb-3">${playersHTML}</div>
               <div class="flex space-x-2">
@@ -979,7 +975,7 @@
     }
 
     function handleSendMessage(e) {
-      if (e) e.preventDefault();
+      e.preventDefault();
       const input = document.getElementById('chat-input');
       if (!input) return;
       const text = input.value.trim();
@@ -999,10 +995,10 @@
           type: 'poker',
           gameData: {
             pot: 150,
-            community: ['🂡', '🂤', '🂩', '🂠', '🂠'],
+            community: ['10H', 'JS', 'QD', '5C', '2H'],
             players: [
-              { name: user.name, chips: 1000, cards: ['🂱', '🂲'] },
-              { name: 'Alex_Dev', chips: 850, cards: ['🂻', '🂭'] }
+              { name: user.name, chips: 1000, cards: ['AH', 'KH'] },
+              { name: 'Peer_Opponent', chips: 850, cards: ['7S', '8S'] }
             ]
           },
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -1047,19 +1043,6 @@
 
       sendOrPublish(msg);
       input.value = '';
-
-      if (!ably && activeTab === 'dms' && activeDMTarget) {
-        setTimeout(() => {
-          const replyMsg = {
-            msgId: "m_" + Date.now(),
-            user: activeDMTarget,
-            text: `Hey! I received your message: "${text}". SDRChat DMs are working smoothly! 🚀`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            channelKey: getActiveChannelKey()
-          };
-          handleIncomingMessage(replyMsg, getActiveChannelKey());
-        }, 1000);
-      }
     }
 
     function sendOrPublish(msg) {
@@ -1095,7 +1078,7 @@
       if (!msg) return;
 
       if (action === 'raise') msg.gameData.pot += 50;
-      else if (action === 'fold') msg.gameData.community = ['🃏', 'Folded'];
+      else if (action === 'fold') msg.gameData.community = ['3H', 'Folded'];
 
       saveState();
       loadMessagesForCurrentChannel();
