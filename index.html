@@ -76,7 +76,7 @@
 </head>
 <body id="app-body" class="h-full flex flex-col overflow-hidden bg-[#111214] font-sans text-gray-200 select-none">
 
-  <!-- IN-APP DISCORD-STYLE TOAST CONTAINER -->
+  <!-- IN-APP TOAST CONTAINER -->
   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
 
   <!-- TOP APP HEADER -->
@@ -149,7 +149,7 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs (Channels vs DMs) -->
+      <!-- Navigation Tabs -->
       <div class="flex border-b border-[#1f2023] bg-[#232428] text-xs font-semibold">
         <button id="tab-channels-btn" onclick="switchSidebarTab('channels')" class="flex-1 py-2 text-white border-b-2 border-indigo-500 transition">Channels</button>
         <button id="tab-dms-btn" onclick="switchSidebarTab('dms')" class="flex-1 py-2 text-gray-400 hover:text-white transition">Direct Msgs</button>
@@ -179,7 +179,7 @@
         </button>
       </div>
 
-      <!-- 📌 BOTTOM-LEFT USER PROFILE BAR -->
+      <!-- USER PROFILE BAR -->
       <div class="h-14 bg-[#232428] border-t border-[#1f2023] px-2 flex items-center justify-between shrink-0">
         <button onclick="openProfileModal()" class="flex items-center space-x-2 p-1 hover:bg-[#35373c] rounded-lg transition max-w-[130px] overflow-hidden">
           <div class="relative shrink-0">
@@ -217,7 +217,7 @@
         <p class="text-sm text-indigo-100 mt-1">Drop image or video anywhere to send into chat</p>
       </div>
 
-      <!-- API Missing Warning Banner -->
+      <!-- Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Type <code>!deleteall</code> for full reset!</span>
@@ -239,14 +239,13 @@
         </div>
       </div>
 
-      <!-- Typing Indicator Bar -->
+      <!-- Typing Indicator -->
       <div id="typing-indicator" class="px-4 py-1 text-xs text-gray-400 italic bg-[#313338] h-6 flex items-center hidden">
         <span>Someone is typing...</span>
       </div>
 
-      <!-- Form Formatting Toolbar & Chat Input -->
+      <!-- Formatting Toolbar & Chat Input -->
       <div class="p-3 bg-[#313338] border-t border-[#222327]">
-        <!-- Wrap Whole Message Mode Buttons -->
         <div class="flex items-center space-x-2 mb-2 text-xs text-gray-400 overflow-x-auto pb-1">
           <span class="text-[10px] uppercase font-bold text-gray-500 shrink-0">Wrap Msg:</span>
           <button onclick="wrapWholeMessage('bold')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Bold</button>
@@ -285,7 +284,7 @@
 
   </div>
 
-  <!-- CALL OVERLAY GRID MODAL WITH SCREEN SHARE & HARDWARE SELECTORS -->
+  <!-- VIDEO CALL MODAL -->
   <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
     <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
       <div class="flex items-center space-x-2">
@@ -315,7 +314,7 @@
       </div>
     </div>
 
-    <!-- Call Controls & Hardware Selectors -->
+    <!-- Call Controls -->
     <div class="p-4 bg-[#1e1f22] border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
       <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
         <div class="flex items-center space-x-2 w-full md:w-auto">
@@ -415,7 +414,7 @@
     </div>
   </div>
 
-  <!-- USER PROFILE SETTINGS MODAL -->
+  <!-- PROFILE MODAL -->
   <div id="profile-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
       <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
@@ -480,13 +479,9 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT APPLICATION CORE -->
+  <!-- JAVASCRIPT CORE -->
   <script>
-    // =========================================================================
-    // 🔑 ABLY REALTIME API KEY CONFIGURATION
-    // =========================================================================
     const ABLY_API_KEY = "P-x9Xw.2O-Uiw:mGxpHZynD8v6ZcsTSbOs1OBwntMAtW_dcTgvTB8aUos";
-    // =========================================================================
 
     let ably = null;
     let globalChannel = null;
@@ -511,7 +506,7 @@
       avatar: localStorage.getItem('sdr_avatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=" + Math.random()
     };
 
-    let activeTab = 'channels'; // 'channels' or 'dms'
+    let activeTab = 'channels';
     let activeDMTarget = null;
 
     let state = JSON.parse(localStorage.getItem('sdr_state')) || {
@@ -584,9 +579,7 @@
 
           subscribeToCurrentChannel();
         });
-      } catch (e) {
-        console.error("Ably Init Error:", e);
-      }
+      } catch (e) {}
     }
 
     function subscribeToCurrentChannel() {
@@ -618,7 +611,6 @@
 
     function renderMemberList(members) {
       const list = document.getElementById('member-list');
-      
       const memberMap = new Map();
       if (members && members.length) {
         members.forEach(m => {
@@ -697,7 +689,7 @@
       const dmKeys = Object.keys(state.dms);
       
       if (dmKeys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click any user in the Online Peers sidebar to DM!</p>';
+        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click any user in Online Peers to DM!</p>';
         return;
       }
 
@@ -934,105 +926,6 @@
         `;
       }
 
-      if (msg.type === 'poll') {
-        let totalVotes = 0;
-        Object.values(msg.pollData.votes || {}).forEach(v => totalVotes += v);
-
-        let optionsHTML = '';
-        msg.pollData.options.forEach((opt, oIdx) => {
-          const count = (msg.pollData.votes && msg.pollData.votes[oIdx]) || 0;
-          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-          optionsHTML += `
-            <button onclick="votePoll('${chanId}', '${msg.msgId}', ${oIdx})" class="w-full bg-[#2b2d31] hover:bg-[#35373c] p-2.5 rounded-xl text-left relative overflow-hidden transition border border-gray-700/50 my-1">
-              <div class="absolute inset-0 bg-indigo-600/20 transition-all duration-300" style="width: ${pct}%"></div>
-              <div class="flex justify-between items-center relative z-10 text-xs font-semibold">
-                <span class="text-gray-200">${opt}</span>
-                <span class="text-indigo-400 font-bold">${count} votes (${pct}%)</span>
-              </div>
-            </button>
-          `;
-        });
-
-        return `
-          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
-            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
-              <div class="flex items-center space-x-2 mb-2">
-                <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
-                <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full font-bold">📊 POLL</span>
-              </div>
-              <h4 class="font-bold text-white text-sm mb-2">${msg.pollData.question}</h4>
-              <div>${optionsHTML}</div>
-            </div>
-          </div>
-        `;
-      }
-
-      if (msg.type === 'wordle') {
-        let guessesHTML = '';
-        (msg.gameData.guesses || []).forEach(g => {
-          let tiles = '';
-          g.result.forEach((res, i) => {
-            const bg = res === 'G' ? 'bg-emerald-600' : (res === 'Y' ? 'bg-amber-500' : 'bg-gray-700');
-            tiles += `<span class="${bg} text-white font-bold w-6 h-6 rounded flex items-center justify-center text-xs uppercase">${g.word[i]}</span>`;
-          });
-          guessesHTML += `<div class="flex space-x-1 my-1">${tiles}<span class="text-[10px] text-gray-400 ml-2 self-center">${g.user}</span></div>`;
-        });
-
-        const status = msg.gameData.solved 
-          ? `🎉 Solved by ${msg.gameData.winner}! Word was: <strong>${msg.gameData.target}</strong>`
-          : 'Guess the 5-letter word below:';
-
-        return `
-          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
-            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
-              <div class="flex items-center space-x-2 mb-2">
-                <span class="font-bold text-xs text-green-400">${msg.user.name}</span>
-                <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-green-500/20 text-green-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🟩 WORDLE MULTIPLAYER</span>
-              </div>
-              <p class="text-xs text-gray-300 mb-2">${status}</p>
-              <div class="mb-3">${guessesHTML}</div>
-              ${!msg.gameData.solved ? `
-                <form onsubmit="submitWordleGuess(event, '${chanId}', '${msg.msgId}')" class="flex space-x-2">
-                  <input type="text" maxlength="5" placeholder="5 LETTERS" class="bg-[#111214] border border-gray-700 rounded-lg px-2 py-1 text-xs text-white uppercase focus:outline-none focus:border-green-500 flex-1">
-                  <button type="submit" class="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1 rounded-lg font-bold transition">Guess</button>
-                </form>
-              ` : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      if (msg.type === 'tictactoe') {
-        let boardHTML = '<div class="grid grid-cols-3 gap-1 w-36 my-2">';
-        msg.gameData.board.forEach((cell, cellIdx) => {
-          boardHTML += `<button onclick="playTicTacToe('${chanId}', '${msg.msgId}', ${cellIdx})" class="w-11 h-11 bg-[#1e1f22] text-sm font-bold text-white rounded-lg border border-gray-700 hover:bg-gray-800 flex items-center justify-center">${cell || ''}</button>`;
-        });
-        boardHTML += '</div>';
-
-        let statusText = msg.gameData.winner 
-          ? (msg.gameData.winner === 'DRAW' ? '🤝 Game Draw!' : `🎉 Winner: ${msg.gameData.winner}!`)
-          : `Turn: <strong class="text-indigo-400">${msg.gameData.turn}</strong>`;
-
-        return `
-          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
-            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-sm bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
-              <div class="flex items-center space-x-2 mb-1">
-                <span class="font-bold text-xs text-emerald-400">${msg.user.name}</span>
-                <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🎮 TIC-TAC-TOE</span>
-              </div>
-              <p class="text-xs text-gray-300">${statusText}</p>
-              ${boardHTML}
-            </div>
-          </div>
-        `;
-      }
-
       let content = parseMarkdownHTML(msg.text);
       if (msg.image) {
         content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
@@ -1046,26 +939,10 @@
         `;
       }
 
-      let reactionsHTML = '';
-      if (msg.reactions && Object.keys(msg.reactions).length > 0) {
-        reactionsHTML = '<div class="flex flex-wrap gap-1 mt-1.5">';
-        Object.keys(msg.reactions).forEach(emoji => {
-          reactionsHTML += `<button onclick="addReaction('${chanId}', '${msg.msgId}', '${emoji}')" class="bg-[#2b2d31] border border-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-indigo-600/20 transition">${emoji} ${msg.reactions[emoji]}</button>`;
-        });
-        reactionsHTML += '</div>';
-      }
-
       if (isSequential) {
         return `
           <div class="group relative hover:bg-[#2b2d31]/30 pl-12 pr-2 py-0.5 rounded-lg transition" id="msg-card-${msg.msgId}">
             <div class="text-sm text-gray-200 leading-relaxed">${content}</div>
-            ${reactionsHTML}
-            <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
-              <button onclick="addReaction('${chanId}', '${msg.msgId}', '❤️')" class="hover:text-red-400">❤️</button>
-              <button onclick="addReaction('${chanId}', '${msg.msgId}', '🔥')" class="hover:text-yellow-400">🔥</button>
-              <button onclick="addReaction('${chanId}', '${msg.msgId}', '👍')" class="hover:text-blue-400">👍</button>
-              <button onclick="pinMessage('${chanId}', '${msg.msgId}')" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
-            </div>
           </div>
         `;
       }
@@ -1079,14 +956,6 @@
               <span class="text-[10px] text-gray-500">${msg.time}</span>
             </div>
             <div class="text-sm text-gray-200 mt-0.5 leading-relaxed">${content}</div>
-            ${reactionsHTML}
-          </div>
-
-          <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
-            <button onclick="addReaction('${chanId}', '${msg.msgId}', '❤️')" class="hover:text-red-400">❤️</button>
-            <button onclick="addReaction('${chanId}', '${msg.msgId}', '🔥')" class="hover:text-yellow-400">🔥</button>
-            <button onclick="addReaction('${chanId}', '${msg.msgId}', '👍')" class="hover:text-blue-400">👍</button>
-            <button onclick="pinMessage('${chanId}', '${msg.msgId}')" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
           </div>
         </div>
       `;
@@ -1122,43 +991,10 @@
       const text = input.value.trim();
       if (!text) return;
 
+      // STEALTH DELETEALL COMMAND
       if (text === '!deleteall') {
         localStorage.clear();
         location.reload();
-        return;
-      }
-
-      if (text.startsWith('/poll')) {
-        const matches = text.match(/"([^"]+)"/g);
-        if (matches && matches.length >= 3) {
-          const question = matches[0].replace(/"/g, '');
-          const options = matches.slice(1).map(m => m.replace(/"/g, ''));
-          const pollMsg = {
-            msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
-            user: user,
-            type: 'poll',
-            pollData: { question, options, votes: {} },
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            channelKey: getActiveChannelKey()
-          };
-          sendOrPublish(pollMsg);
-          input.value = '';
-          return;
-        }
-      }
-
-      if (text.startsWith('/wordle')) {
-        const word = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
-        const wordleMsg = {
-          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
-          user: user,
-          type: 'wordle',
-          gameData: { target: word, guesses: [], solved: false, winner: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          channelKey: getActiveChannelKey()
-        };
-        sendOrPublish(wordleMsg);
-        input.value = '';
         return;
       }
 
@@ -1207,20 +1043,6 @@
         return;
       }
 
-      if (text.startsWith('/tictactoe')) {
-        const gameMsg = {
-          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
-          user: user,
-          type: 'tictactoe',
-          gameData: { board: Array(9).fill(null), turn: "X", winner: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          channelKey: getActiveChannelKey()
-        };
-        sendOrPublish(gameMsg);
-        input.value = '';
-        return;
-      }
-
       const msg = {
         msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
         user: user,
@@ -1260,7 +1082,6 @@
       const targetChanKey = msg.channelKey || incomingChanKey || currentActiveKey;
 
       if (!state.messages[targetChanKey]) state.messages[targetChanKey] = [];
-
       if (state.messages[targetChanKey].some(m => m.msgId === msg.msgId)) return;
 
       state.messages[targetChanKey].push(msg);
@@ -1280,9 +1101,7 @@
       if (!msg) return;
 
       if (action === 'raise') msg.gameData.pot += 50;
-      else if (action === 'fold') {
-        msg.gameData.community = ['🃏', 'Folded'];
-      }
+      else if (action === 'fold') msg.gameData.community = ['🃏', 'Folded'];
 
       saveState();
       loadMessagesForCurrentChannel();
@@ -1306,6 +1125,19 @@
       }
     }
 
+    function handleIncomingMutation(data) {
+      const chanId = getActiveChannelKey();
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === data.msgId);
+      if (!msg) return;
+
+      if (data.type === 'poker') msg.gameData = data.gameData;
+      else if (data.type === 'chess') msg.gameData = data.gameData;
+
+      saveState();
+      loadMessagesForCurrentChannel();
+    }
+
     function showCustomDiscordToast(msg, targetChanKey) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -1323,11 +1155,8 @@
       `;
 
       toast.onclick = () => {
-        if (targetChanKey.startsWith('dm_')) {
-          switchSidebarTab('dms');
-        } else {
-          switchSidebarTab('channels');
-        }
+        if (targetChanKey.startsWith('dm_')) switchSidebarTab('dms');
+        else switchSidebarTab('channels');
         toast.remove();
       };
 
@@ -1345,7 +1174,6 @@
 
         osc1.type = 'sine';
         osc2.type = 'sine';
-
         osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
         osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
 
@@ -1361,132 +1189,6 @@
         osc2.start(ctx.currentTime + 0.08);
         osc2.stop(ctx.currentTime + 0.35);
       } catch (e) {}
-    }
-
-    function submitWordleGuess(e, chanId, msgId) {
-      e.preventDefault();
-      const input = e.target.querySelector('input');
-      const guess = input.value.trim().toUpperCase();
-      if (guess.length !== 5) return;
-
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (!msg || msg.gameData.solved) return;
-
-      const target = msg.gameData.target;
-      let res = Array(5).fill('B');
-      let targetArr = target.split('');
-
-      for (let i = 0; i < 5; i++) {
-        if (guess[i] === target[i]) {
-          res[i] = 'G';
-          targetArr[i] = null;
-        }
-      }
-      for (let i = 0; i < 5; i++) {
-        if (res[i] !== 'G' && targetArr.includes(guess[i])) {
-          res[i] = 'Y';
-          targetArr[targetArr.indexOf(guess[i])] = null;
-        }
-      }
-
-      msg.gameData.guesses.push({ word: guess, result: res, user: user.name });
-      if (guess === target) {
-        msg.gameData.solved = true;
-        msg.gameData.winner = user.name;
-      }
-
-      saveState();
-      loadMessagesForCurrentChannel();
-
-      if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'wordle', msgId, gameData: msg.gameData });
-      }
-    }
-
-    function playTicTacToe(chanId, msgId, cellIdx) {
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (!msg || msg.gameData.winner || msg.gameData.board[cellIdx]) return;
-
-      msg.gameData.board[cellIdx] = msg.gameData.turn;
-      
-      const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-      let winner = null;
-      wins.forEach(w => {
-        const [a,b,c] = w;
-        if (msg.gameData.board[a] && msg.gameData.board[a] === msg.gameData.board[b] && msg.gameData.board[a] === msg.gameData.board[c]) {
-          winner = msg.gameData.board[a];
-        }
-      });
-
-      if (winner) msg.gameData.winner = winner;
-      else if (msg.gameData.board.every(c => c !== null)) msg.gameData.winner = 'DRAW';
-      else msg.gameData.turn = msg.gameData.turn === 'X' ? 'O' : 'X';
-
-      saveState();
-      loadMessagesForCurrentChannel();
-
-      if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'tictactoe', msgId, gameData: msg.gameData });
-      }
-    }
-
-    function votePoll(chanId, msgId, optIdx) {
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (msg) {
-        if (!msg.pollData.votes) msg.pollData.votes = {};
-        msg.pollData.votes[optIdx] = (msg.pollData.votes[optIdx] || 0) + 1;
-        saveState();
-        loadMessagesForCurrentChannel();
-
-        if (ably && currentChannelObj) {
-          currentChannelObj.publish('mutation', { type: 'pollVote', msgId, optIdx });
-        }
-      }
-    }
-
-    function addReaction(chanId, msgId, emoji) {
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (msg) {
-        if (!msg.reactions) msg.reactions = {};
-        msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
-        saveState();
-        loadMessagesForCurrentChannel();
-
-        if (ably && currentChannelObj) {
-          currentChannelObj.publish('mutation', { type: 'reaction', msgId, emoji });
-        }
-      }
-    }
-
-    function handleIncomingMutation(data) {
-      const chanId = getActiveChannelKey();
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === data.msgId);
-      
-      if (!msg) return;
-
-      if (data.type === 'pollVote') {
-        if (!msg.pollData.votes) msg.pollData.votes = {};
-        msg.pollData.votes[data.optIdx] = (msg.pollData.votes[data.optIdx] || 0) + 1;
-      } else if (data.type === 'wordle') {
-        msg.gameData = data.gameData;
-      } else if (data.type === 'tictactoe') {
-        msg.gameData = data.gameData;
-      } else if (data.type === 'poker') {
-        msg.gameData = data.gameData;
-      } else if (data.type === 'chess') {
-        msg.gameData = data.gameData;
-      } else if (data.type === 'reaction') {
-        if (!msg.reactions) msg.reactions = {};
-        msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1;
-      }
-
-      saveState();
-      loadMessagesForCurrentChannel();
     }
 
     function pinMessage(chanId, msgId) {
@@ -1525,27 +1227,10 @@
       document.getElementById('pinned-drawer').classList.toggle('hidden');
     }
 
-    function handleDragOver(e) {
-      e.preventDefault();
-      document.getElementById('drag-overlay').classList.remove('hidden');
-    }
-
-    function handleDragLeave(e) {
-      e.preventDefault();
-      document.getElementById('drag-overlay').classList.add('hidden');
-    }
-
-    function handleFileDrop(e) {
-      e.preventDefault();
-      document.getElementById('drag-overlay').classList.add('hidden');
-      const file = e.dataTransfer.files[0];
-      if (file) processAndUploadFile(file);
-    }
-
-    function handleFileSelect(e) {
-      const file = e.target.files[0];
-      if (file) processAndUploadFile(file);
-    }
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('drag-overlay').classList.remove('hidden'); }
+    function handleDragLeave(e) { e.preventDefault(); document.getElementById('drag-overlay').classList.add('hidden'); }
+    function handleFileDrop(e) { e.preventDefault(); document.getElementById('drag-overlay').classList.add('hidden'); if(e.dataTransfer.files[0]) processAndUploadFile(e.dataTransfer.files[0]); }
+    function handleFileSelect(e) { if(e.target.files[0]) processAndUploadFile(e.target.files[0]); }
 
     function processAndUploadFile(file) {
       const reader = new FileReader();
@@ -1575,20 +1260,17 @@
         speakerSelect.innerHTML = '<option value="">Default Output/Headphones</option>';
 
         devices.filter(d => d.kind === 'audioinput').forEach(d => {
-          micSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Microphone ' + (micSelect.length)}</option>`;
+          micSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Microphone'}</option>`;
         });
-
         devices.filter(d => d.kind === 'audiooutput').forEach(d => {
-          speakerSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Speaker/Headphone ' + (speakerSelect.length)}</option>`;
+          speakerSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Speaker'}</option>`;
         });
       } catch (e) {}
     }
 
     async function changeAudioInput() {
       const deviceId = document.getElementById('mic-select').value;
-      if (activeMediaStream) {
-        activeMediaStream.getTracks().forEach(track => track.stop());
-      }
+      if (activeMediaStream) activeMediaStream.getTracks().forEach(t => t.stop());
       try {
         activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
       } catch (e) {}
@@ -1598,9 +1280,7 @@
       const deviceId = document.getElementById('speaker-select').value;
       const videoEl = document.getElementById('local-video');
       if (videoEl && typeof videoEl.setSinkId === 'function' && deviceId) {
-        try {
-          await videoEl.setSinkId(deviceId);
-        } catch (e) {}
+        try { await videoEl.setSinkId(deviceId); } catch (e) {}
       }
     }
 
@@ -1636,40 +1316,21 @@
         document.getElementById('screen-share-placeholder').classList.add('hidden');
         screenBtn.classList.add('bg-indigo-600');
 
-        screenShareStream.getVideoTracks()[0].onended = () => {
-          toggleScreenShare();
-        };
+        screenShareStream.getVideoTracks()[0].onended = () => { toggleScreenShare(); };
       } catch (e) {}
     }
 
     function leaveVoiceCall() {
       isVoiceActive = false;
       document.getElementById('voice-panel').classList.add('hidden');
-      if (activeMediaStream) {
-        activeMediaStream.getTracks().forEach(t => t.stop());
-      }
-      if (screenShareStream) {
-        screenShareStream.getTracks().forEach(t => t.stop());
-      }
+      if (activeMediaStream) activeMediaStream.getTracks().forEach(t => t.stop());
+      if (screenShareStream) screenShareStream.getTracks().forEach(t => t.stop());
     }
 
-    function toggleMobileSidebar() {
-      document.getElementById('channels-sidebar').classList.toggle('-translate-x-full');
-    }
-
-    function toggleServerBarVisibility() {
-      document.getElementById('servers-bar').classList.toggle('hidden');
-    }
-
-    function toggleMemberSidebar() {
-      document.getElementById('member-sidebar').classList.toggle('hidden');
-    }
-
-    function insertCommand(cmd) {
-      const input = document.getElementById('chat-input');
-      input.value = cmd;
-      input.focus();
-    }
+    function toggleMobileSidebar() { document.getElementById('channels-sidebar').classList.toggle('-translate-x-full'); }
+    function toggleServerBarVisibility() { document.getElementById('servers-bar').classList.toggle('hidden'); }
+    function toggleMemberSidebar() { document.getElementById('member-sidebar').classList.toggle('hidden'); }
+    function insertCommand(cmd) { const input = document.getElementById('chat-input'); input.value = cmd; input.focus(); }
 
     function playSoundFx(type) {
       try {
@@ -1678,34 +1339,16 @@
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-
         if (type === 'airhorn') {
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(300, ctx.currentTime);
           osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.15);
           gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.25);
-        } else if (type === 'quack') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(150, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.2);
-        } else if (type === 'levelup') {
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(261, ctx.currentTime);
-          osc.frequency.setValueAtTime(329, ctx.currentTime + 0.08);
-          osc.frequency.setValueAtTime(392, ctx.currentTime + 0.16);
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
+          osc.start(); osc.stop(ctx.currentTime + 0.25);
         } else {
           osc.frequency.setValueAtTime(440, ctx.currentTime);
           gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.1);
+          osc.start(); osc.stop(ctx.currentTime + 0.1);
         }
       } catch (e) {}
     }
