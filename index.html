@@ -37,7 +37,6 @@
   </script>
 
   <style>
-    /* Theme engine variables */
     body.theme-oled { --bg-dark: #000000; --bg-server: #0a0a0a; --bg-sidebar: #121212; --bg-chat: #181818; }
     body.theme-cyberpunk { --bg-dark: #0d0221; --bg-server: #0f0529; --bg-sidebar: #1a083a; --bg-chat: #240c4f; }
     body.theme-vaporwave { --bg-dark: #1a0933; --bg-server: #2b0e4a; --bg-sidebar: #3d1466; --bg-chat: #4e1a80; }
@@ -211,7 +210,7 @@
       <!-- API Missing Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 372 for cross-network sync!</span>
+        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 370 for cross-network sync!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -532,7 +531,6 @@
           document.getElementById('connection-status').innerText = "Ably Live";
           document.getElementById('connection-status').className = "bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30";
           
-          // Connect to global structural syncing channel
           globalChannel = ably.channels.get('sdr_global_sync');
           globalChannel.subscribe('structure', (msg) => {
             handleGlobalStructureSync(msg.data);
@@ -608,7 +606,6 @@
       list.innerHTML = html;
     }
 
-    // Direct Messaging Engine
     function startDirectMessage(targetId, targetName, targetAvatar) {
       activeDMTarget = { id: targetId, name: targetName, avatar: targetAvatar };
       if (!state.dms[targetId]) {
@@ -662,7 +659,6 @@
       if (ably) subscribeToCurrentChannel();
     }
 
-    // Global Server & Channel Synchronization
     function broadcastStructureChange(type, payload) {
       if (ably && globalChannel) {
         globalChannel.publish('structure', { type, payload });
@@ -917,7 +913,6 @@
         reactionsHTML += '</div>';
       }
 
-      // Hide author name for sequential messages from same user
       if (isSequential) {
         return `
           <div class="group relative hover:bg-[#2b2d31]/30 pl-12 pr-2 py-0.5 rounded-lg transition" id="msg-card-${msg.msgId}">
@@ -975,7 +970,7 @@
       if (type === 'bold') input.value = `**\${val}**`;
       else if (type === 'italic') input.value = `*\${val}*`;
       else if (type === 'code') input.value = `\`\`\`${val}\`\`\``;
-      else if (type === 'spoiler') input.value = `||\${val}||`;
+      else if (type === 'spoiler') input.value = `||${val}||`;
       input.focus();
     }
 
@@ -1041,16 +1036,15 @@
     }
 
     function sendOrPublish(msg) {
+      handleIncomingMessage(msg);
       if (ably && currentChannelObj) {
         currentChannelObj.publish('msg', msg);
-      } else {
-        handleIncomingMessage(msg);
       }
     }
 
     function handleIncomingMessage(msg) {
       let getChanKey = () => activeTab === 'dms' && activeDMTarget 
-        ? `dm_\${[user.id, activeDMTarget.id].sort().join('_')}`
+        ? `dm_${[user.id, activeDMTarget.id].sort().join('_')}`
         : `${state.currentServer}_${state.currentChannel}`;
 
       const chanId = getChanKey();
@@ -1064,7 +1058,6 @@
       if (msg.user.id !== user.id) playAudio();
     }
 
-    // Mini Games Engines (TicTacToe & RPS with win condition check)
     function playTicTacToe(chanId, msgId, cellIdx) {
       const messages = state.messages[chanId] || [];
       const msg = messages.find(m => m.msgId === msgId);
@@ -1072,7 +1065,6 @@
 
       msg.gameData.board[cellIdx] = msg.gameData.turn;
       
-      // Check Win Combinations
       const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
       let winner = null;
       wins.forEach(w => {
@@ -1101,11 +1093,11 @@
 
       const botChoice = ['✊', '✋', '✌️'][Math.floor(Math.random() * 3)];
       let result = '';
-      if (move === botChoice) result = `Draw! Both picked \${move}`;
+      if (move === botChoice) result = `Draw! Both picked ${move}`;
       else if ((move === '✊' && botChoice === '✌️') || (move === '✋' && botChoice === '✊') || (move === '✌️' && botChoice === '✋')) {
-        result = `You Won! ${move} beats${botChoice}`;
+        result = `You Won! ${move} beats ${botChoice}`;
       } else {
-        result = `You Lost! ${botChoice} beats${move}`;
+        result = `You Lost! ${botChoice} beats ${move}`;
       }
 
       msg.gameData.result = result;
@@ -1149,7 +1141,7 @@
 
     function handleIncomingMutation(data) {
       let getChanKey = () => activeTab === 'dms' && activeDMTarget 
-        ? `dm_\${[user.id, activeDMTarget.id].sort().join('_')}`
+        ? `dm_${[user.id, activeDMTarget.id].sort().join('_')}`
         : `${state.currentServer}_${state.currentChannel}`;
 
       const chanId = getChanKey();
@@ -1186,5 +1178,248 @@
 
     function updatePinnedList() {
       let getChanKey = () => activeTab === 'dms' && activeDMTarget 
-        ? `dm_\${[user.id, activeDMTarget.id].sort().join('_')}`
-        : `\${state
+        ? `dm_${[user.id, activeDMTarget.id].sort().join('_')}`
+        : `${state.currentServer}_${state.currentChannel}`;
+
+      const chanId = getChanKey();
+      const messages = state.messages[chanId] || [];
+      const pinned = messages.filter(m => m.isPinned);
+      
+      const countEl = document.getElementById('pinned-count');
+      if (pinned.length > 0) {
+        countEl.innerText = pinned.length;
+        countEl.classList.remove('hidden');
+      } else {
+        countEl.classList.add('hidden');
+      }
+
+      const listEl = document.getElementById('pinned-messages-list');
+      listEl.innerHTML = pinned.map(m => `
+        <div class="p-2 bg-[#1e1f22] rounded-lg border border-gray-700 text-xs">
+          <span class="font-bold text-indigo-400">${m.user.name}:</span>
+          <p class="text-gray-300 truncate">${m.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function togglePinnedDrawer() {
+      document.getElementById('pinned-drawer').classList.toggle('hidden');
+    }
+
+    async function populateMicrophones() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const micSelect = document.getElementById('mic-select');
+        micSelect.innerHTML = '<option value="">Default Microphone</option>';
+        devices.filter(d => d.kind === 'audioinput').forEach(d => {
+          micSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Microphone ' + (micSelect.length)}</option>`;
+        });
+      } catch (e) {}
+    }
+
+    async function changeAudioInput() {
+      const deviceId = document.getElementById('mic-select').value;
+      if (activeMediaStream) {
+        activeMediaStream.getTracks().forEach(track => track.stop());
+      }
+      try {
+        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+      } catch (e) {}
+    }
+
+    async function joinVoiceCall() {
+      isVoiceActive = true;
+      document.getElementById('voice-panel').classList.remove('hidden');
+      try {
+        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        const videoEl = document.getElementById('local-video');
+        videoEl.srcObject = activeMediaStream;
+        videoEl.classList.remove('hidden');
+        document.getElementById('local-video-placeholder').classList.add('hidden');
+      } catch (e) {}
+    }
+
+    function leaveVoiceCall() {
+      isVoiceActive = false;
+      document.getElementById('voice-panel').classList.add('hidden');
+      if (activeMediaStream) {
+        activeMediaStream.getTracks().forEach(t => t.stop());
+      }
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('channels-sidebar').classList.toggle('-translate-x-full');
+    }
+
+    function toggleServerBarVisibility() {
+      document.getElementById('servers-bar').classList.toggle('hidden');
+    }
+
+    function toggleMemberSidebar() {
+      document.getElementById('member-sidebar').classList.toggle('hidden');
+    }
+
+    function insertCommand(cmd) {
+      const input = document.getElementById('chat-input');
+      input.value = cmd;
+      input.focus();
+    }
+
+    function playSoundFx(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'airhorn') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'quack') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'levelup') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(261, ctx.currentTime);
+          osc.frequency.setValueAtTime(329, ctx.currentTime + 0.08);
+          osc.frequency.setValueAtTime(392, ctx.currentTime + 0.16);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        }
+      } catch (e) {}
+    }
+
+    function openSoundboardModal() { document.getElementById('soundboard-modal').classList.remove('hidden'); }
+    function closeSoundboardModal() { document.getElementById('soundboard-modal').classList.add('hidden'); }
+
+    function setTheme(theme) {
+      const body = document.getElementById('app-body');
+      body.className = body.className.replace(/theme-\w+/g, '');
+      if (theme !== 'dark') body.classList.add(`theme-${theme}`);
+      localStorage.setItem('sdr_theme', theme);
+      closeThemeModal();
+    }
+
+    function openThemeModal() { document.getElementById('theme-modal').classList.remove('hidden'); }
+    function closeThemeModal() { document.getElementById('theme-modal').classList.add('hidden'); }
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const msg = {
+            msgId: "m_" + Date.now(),
+            user: user,
+            text: `Attachment: ${file.name}`,
+            image: event.target.result,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          sendOrPublish(msg);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const msg = {
+            msgId: "m_" + Date.now(),
+            user: user,
+            text: `Attachment: ${file.name}`,
+            image: event.target.result,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          sendOrPublish(msg);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleTypingInput() {
+      if (!ably || !currentChannelObj) return;
+      currentChannelObj.publish('typing', { userId: user.id, userName: user.name });
+    }
+
+    function showTypingIndicator(name) {
+      const ind = document.getElementById('typing-indicator');
+      ind.querySelector('span').innerText = `${name} is typing...`;
+      ind.classList.remove('hidden');
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => ind.classList.add('hidden'), 2000);
+    }
+
+    function toggleMuteMic(btn) { btn.classList.toggle('text-red-400'); }
+    function toggleDeafen(btn) { btn.classList.toggle('text-red-400'); }
+
+    function openProfileModal() {
+      document.getElementById('modal-name-input').value = user.name;
+      document.getElementById('modal-avatar-input').value = user.avatar;
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+    function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+    function saveProfile() {
+      user.name = document.getElementById('modal-name-input').value.trim() || user.name;
+      user.avatar = document.getElementById('modal-avatar-input').value.trim() || user.avatar;
+      localStorage.setItem('sdr_name', user.name);
+      localStorage.setItem('sdr_avatar', user.avatar);
+      updateProfileUI();
+      closeProfileModal();
+      if (ably && currentChannelObj) currentChannelObj.presence.update({ name: user.name, avatar: user.avatar, id: user.id });
+    }
+    function updateProfileUI() {
+      document.getElementById('user-name-bottom').innerText = user.name;
+      document.getElementById('user-avatar-bottom').src = user.avatar;
+      document.getElementById('call-avatar-main').src = user.avatar;
+      document.getElementById('call-name-main').innerText = user.name;
+    }
+
+    function openCreateServerModal() { document.getElementById('server-modal').classList.remove('hidden'); }
+    function closeCreateServerModal() { document.getElementById('server-modal').classList.add('hidden'); }
+    function openCreateChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
+    function closeCreateChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
+    function openVideoCallModal() { document.getElementById('video-call-modal').classList.remove('hidden'); }
+    function closeVideoCallModal() { document.getElementById('video-call-modal').classList.add('hidden'); }
+    function toggleCallMic() { document.getElementById('mic-btn').classList.toggle('bg-red-600'); }
+    function toggleCallCam() { document.getElementById('cam-btn').classList.toggle('bg-red-600'); }
+
+    function playAudio() {
+      if (!isSoundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(580, ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } catch (e) {}
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    }
+  </script>
+</body>
+</html>
