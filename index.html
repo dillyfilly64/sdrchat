@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SDRChat — The Ultimate Decentralized Discord Alternative</title>
+  <title>SDRChat — Ultimate Discord Clone</title>
   
   <!-- iOS PWA Optimizations -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -42,6 +42,7 @@
     body.theme-oled { --bg-dark: #000000; --bg-server: #0a0a0a; --bg-sidebar: #121212; --bg-chat: #181818; }
     body.theme-cyberpunk { --bg-dark: #0d0221; --bg-server: #0f0529; --bg-sidebar: #1a083a; --bg-chat: #240c4f; }
     body.theme-vaporwave { --bg-dark: #1a0933; --bg-server: #2b0e4a; --bg-sidebar: #3d1466; --bg-chat: #4e1a80; }
+    body.theme-matrix { --bg-dark: #021107; --bg-server: #041c0c; --bg-sidebar: #082d14; --bg-chat: #0a3a19; }
 
     /* Custom Discord-Style Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -49,7 +50,7 @@
     ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #111214; }
     
-    .glass-modal {
+    .glass-panel {
       background: rgba(30, 31, 34, 0.94);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -62,7 +63,7 @@
     }
     .speaking-ring { animation: pulseGlow 1.5s infinite; }
 
-    /* Equalizer Bars */
+    /* Equalizer Waveform Bars */
     @keyframes eqBar {
       0%, 100% { height: 4px; }
       50% { height: 18px; }
@@ -70,12 +71,27 @@
     .eq-bar { animation: eqBar 1.2s infinite ease-in-out; }
     .eq-bar:nth-child(2) { animation-delay: 0.2s; }
     .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Spoiler Blur Effect */
+    .spoiler-text {
+      background-color: #202225;
+      color: transparent;
+      border-radius: 4px;
+      padding: 0 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .spoiler-text:hover, .spoiler-text.revealed {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: inherit;
+    }
   </style>
 </head>
 <body id="app-body" class="h-full flex flex-col overflow-hidden bg-[#111214] font-sans text-gray-200 select-none">
 
   <!-- TOP APP HEADER -->
-  <header class="h-12 border-b border-[#1f2023] bg-[#1e1f22] flex items-center justify-between px-4 shrink-0 z-30">
+  <header id="app-header" class="h-12 border-b border-[#1f2023] bg-[#1e1f22] flex items-center justify-between px-4 shrink-0 z-30">
     <div class="flex items-center space-x-3">
       <button onclick="toggleMobileSidebar()" class="md:hidden text-gray-400 hover:text-white p-1">
         <i class="fa-solid fa-bars text-lg"></i>
@@ -85,35 +101,33 @@
       </div>
       <div>
         <h1 class="font-bold text-white text-sm flex items-center gap-2">
-          SDRChat <span id="connection-status" class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">Connecting...</span>
+          SDRChat <span id="connection-status" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">Ready</span>
         </h1>
         <p id="channel-subtitle" class="text-[11px] text-gray-400">#general — SDR Central</p>
       </div>
     </div>
 
-    <!-- Header Tools & User identity -->
+    <!-- Header Tools -->
     <div class="flex items-center space-x-2">
-      <!-- Pinned Messages Drawer Toggle -->
+      <!-- Soundboard Button -->
+      <button onclick="openSoundboardModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Soundboard">
+        <i class="fa-solid fa-icons text-indigo-400 text-sm"></i>
+      </button>
+
+      <!-- Pinned Messages Button -->
       <button onclick="togglePinnedDrawer()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition relative" title="Pinned Messages">
         <i class="fa-solid fa-thumbtack text-sm"></i>
         <span id="pinned-count" class="hidden absolute -top-1 -right-1 bg-indigo-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
       </button>
 
-      <!-- Theme Store Switcher Button -->
-      <button onclick="openThemeModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Themes & Customization">
+      <!-- Theme Switcher Button -->
+      <button onclick="openThemeModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Themes">
         <i class="fa-solid fa-palette text-indigo-400 text-sm"></i>
       </button>
 
-      <!-- Sound FX Toggle -->
+      <!-- Audio FX Toggle -->
       <button id="sound-toggle" onclick="toggleSound()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Audio FX">
         <i class="fa-solid fa-volume-high text-indigo-400" id="sound-icon"></i>
-      </button>
-
-      <!-- User Profile Pill -->
-      <button onclick="openProfileModal()" class="flex items-center space-x-2 bg-[#2b2d31] hover:bg-[#35373c] border border-gray-700/50 rounded-full py-1 px-3 transition">
-        <img id="header-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-5 h-5 rounded-full bg-gray-900 border border-gray-600">
-        <span id="header-username" class="text-xs font-semibold text-gray-200 max-w-[100px] truncate">Anonymous</span>
-        <i class="fa-solid fa-gear text-[10px] text-indigo-400"></i>
       </button>
     </div>
   </header>
@@ -121,13 +135,15 @@
   <!-- MAIN APP CONTAINER -->
   <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- 1. SERVERS BAR -->
+    <!-- 1. SERVERS SIDEBAR -->
     <nav id="servers-bar" class="w-18 bg-[#1e1f22] border-r border-[#1f2023] flex flex-col items-center py-3 space-y-3 shrink-0 z-20 overflow-y-auto">
       <!-- Injected Server Icons -->
     </nav>
 
-    <!-- 2. CHANNELS SIDEBAR -->
+    <!-- 2. CHANNELS SIDEBAR (WITH BOTTOM USER PANEL) -->
     <aside id="channels-sidebar" class="w-60 bg-[#2b2d31] border-r border-[#1f2023] flex flex-col shrink-0 z-10 transition-transform duration-200 absolute md:relative inset-y-0 left-18 md:left-0 -translate-x-full md:translate-x-0">
+      
+      <!-- Server Header -->
       <div class="p-3 font-bold text-xs uppercase tracking-wider text-gray-300 flex justify-between items-center border-b border-[#1f2023]">
         <span id="current-server-title">SDR Central</span>
         <button onclick="openCreateChannelModal()" class="text-gray-400 hover:text-white p-1" title="Create Channel">
@@ -135,11 +151,12 @@
         </button>
       </div>
 
+      <!-- Channel List -->
       <div id="channels-list" class="flex-1 overflow-y-auto p-2 space-y-4">
         <!-- Injected Channels -->
       </div>
 
-      <!-- Active Voice Lounge Status Card -->
+      <!-- Voice Lounge Active Card -->
       <div id="voice-panel" class="hidden p-3 bg-[#111214] border-t border-emerald-500/30 flex flex-col space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
@@ -154,9 +171,36 @@
           <div class="eq-bar w-1 bg-emerald-400 rounded-full"></div>
         </div>
         <button onclick="openVideoCallModal()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 text-xs font-bold py-1 rounded-lg transition">
-          <i class="fa-solid fa-video mr-1"></i> Call Overlay
+          <i class="fa-solid fa-video mr-1"></i> Call Grid
         </button>
       </div>
+
+      <!-- 📌 BOTTOM-LEFT USER PROFILE BAR (DISCORD ACCURATE) -->
+      <div class="h-14 bg-[#232428] border-t border-[#1f2023] px-2 flex items-center justify-between shrink-0">
+        <button onclick="openProfileModal()" class="flex items-center space-x-2 p-1 hover:bg-[#35373c] rounded-lg transition max-w-[130px] overflow-hidden">
+          <div class="relative shrink-0">
+            <img id="user-avatar-bottom" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-8 h-8 rounded-full bg-gray-900 border border-gray-700">
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#232428]"></span>
+          </div>
+          <div class="text-left leading-tight truncate">
+            <div id="user-name-bottom" class="text-xs font-bold text-white truncate">Anonymous</div>
+            <div class="text-[10px] text-gray-400">#Online</div>
+          </div>
+        </button>
+        
+        <div class="flex items-center space-x-0.5 text-gray-400">
+          <button onclick="toggleMuteMic(this)" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="Mute Mic">
+            <i class="fa-solid fa-microphone text-xs"></i>
+          </button>
+          <button onclick="toggleDeafen(this)" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="Deafen Audio">
+            <i class="fa-solid fa-headphones text-xs"></i>
+          </button>
+          <button onclick="openProfileModal()" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="User Settings">
+            <i class="fa-solid fa-gear text-xs"></i>
+          </button>
+        </div>
+      </div>
+
     </aside>
 
     <!-- 3. MAIN CHAT AREA -->
@@ -165,7 +209,7 @@
       <!-- API Missing Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 351 for cross-device cloud sync!</span>
+        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 360 to sync across different networks!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -173,7 +217,7 @@
         <!-- Injected Messages -->
       </div>
 
-      <!-- PINNED MESSAGES DRAWER PANEL -->
+      <!-- PINNED MESSAGES DRAWER -->
       <div id="pinned-drawer" class="hidden absolute top-0 right-0 w-80 bg-[#2b2d31] border-l border-b border-gray-700/80 shadow-2xl z-20 max-h-96 overflow-y-auto p-3">
         <div class="flex justify-between items-center border-b border-gray-700 pb-2 mb-2">
           <span class="text-xs font-bold text-white uppercase"><i class="fa-solid fa-thumbtack text-indigo-400 mr-1"></i> Pinned Messages</span>
@@ -189,14 +233,17 @@
         <span>Someone is typing...</span>
       </div>
 
-      <!-- Form Toolbar & Chat Input -->
+      <!-- Formatting Toolbar & Chat Input -->
       <div class="p-3 bg-[#313338] border-t border-[#222327]">
-        <!-- Formatting Quick Buttons -->
-        <div class="flex items-center space-x-2 mb-1.5 text-xs text-gray-400">
-          <button onclick="insertFormat('**', '**')" class="hover:text-white px-1 font-bold">B</button>
-          <button onclick="insertFormat('*', '*')" class="hover:text-white px-1 italic">I</button>
-          <button onclick="insertFormat('```', '```')" class="hover:text-white px-1 font-mono">&lt;/&gt;</button>
-          <button onclick="insertFormat('||', '||')" class="hover:text-white px-1">Spoiler</button>
+        <div class="flex items-center space-x-3 mb-1.5 text-xs text-gray-400">
+          <button onclick="insertFormat('**', '**')" class="hover:text-white font-bold" title="Bold">B</button>
+          <button onclick="insertFormat('*', '*')" class="hover:text-white italic" title="Italic">I</button>
+          <button onclick="insertFormat('~', '~')" class="hover:text-white line-through" title="Strikethrough">S</button>
+          <button onclick="insertFormat('```', '```')" class="hover:text-white font-mono" title="Code Block">&lt;/&gt;</button>
+          <button onclick="insertFormat('||', '||')" class="hover:text-white" title="Spoiler">||Spoiler||</button>
+          <div class="h-3 w-[1px] bg-gray-700"></div>
+          <button onclick="insertCommand('/poll &quot;Question&quot; &quot;Opt1&quot; &quot;Opt2&quot;')" class="hover:text-indigo-400 flex items-center gap-1 font-semibold text-[11px]"><i class="fa-solid fa-poll"></i> Poll</button>
+          <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 flex items-center gap-1 font-semibold text-[11px]"><i class="fa-solid fa-gamepad"></i> TicTacToe</button>
         </div>
 
         <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
@@ -205,7 +252,7 @@
             <input type="file" id="file-input" onchange="handleFileSelect(event)" class="hidden">
           </label>
 
-          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message #general... (Try /poll or /roll)" autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500">
+          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message #general... (Try /poll or /tictactoe)" autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500">
 
           <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 shrink-0">
             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -214,19 +261,61 @@
       </div>
     </main>
 
-    <!-- 4. ACTIVE MEMBERS SIDEBAR -->
+    <!-- 4. ONLINE MEMBERS SIDEBAR -->
     <aside class="w-56 bg-[#2b2d31] border-l border-[#1f2023] p-3 hidden lg:block shrink-0 overflow-y-auto">
       <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Online Peers — <span id="member-count">1</span></h3>
       <div id="member-list" class="space-y-2">
-        <!-- Injected Members -->
+        <!-- Injected Active Members -->
       </div>
     </aside>
 
   </div>
 
+  <!-- SOUNDBOARD MODAL -->
+  <div id="soundboard-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-icons text-indigo-400"></i> Soundboard FX
+        </h3>
+        <button onclick="closeSoundboardModal()" class="text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="playSoundFx('airhorn')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">📢</span>
+          <div>
+            <div class="font-bold text-xs text-white">Airhorn</div>
+            <div class="text-[10px] text-gray-400">Synth Blast</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('quack')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">🦆</span>
+          <div>
+            <div class="font-bold text-xs text-white">Quack</div>
+            <div class="text-[10px] text-gray-400">Duck Sound</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('levelup')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">⭐</span>
+          <div>
+            <div class="font-bold text-xs text-white">Level Up</div>
+            <div class="text-[10px] text-gray-400">8-Bit Arpeggio</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('badumtss')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">🥁</span>
+          <div>
+            <div class="font-bold text-xs text-white">Ba-Dum-Tss</div>
+            <div class="text-[10px] text-gray-400">Rimshot</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- THEME STORE MODAL -->
   <div id="theme-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
       <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
         <i class="fa-solid fa-palette text-indigo-400"></i>
         <span>Theme Store & Customization</span>
@@ -255,7 +344,7 @@
     </div>
   </div>
 
-  <!-- VOICE / VIDEO CALL OVERLAY MODAL -->
+  <!-- CALL OVERLAY GRID MODAL -->
   <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
     <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
       <div class="flex items-center space-x-2">
@@ -284,9 +373,9 @@
     </div>
   </div>
 
-  <!-- PROFILE MODAL -->
+  <!-- USER SETTINGS MODAL -->
   <div id="profile-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
       <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
         <i class="fa-solid fa-user-gear text-indigo-400"></i>
         <span>User Profile Settings</span>
@@ -308,10 +397,10 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT ENGINE -->
+  <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
     // =========================================================================
-    // 🔑 ABLY API KEY PLACEMENT
+    // 🔑 ABLY REALTIME API KEY ASSIGNMENT
     // =========================================================================
     const ABLY_API_KEY = "P-x9Xw.2O-Uiw:mGxpHZynD8v6ZcsTSbOs1OBwntMAtW_dcTgvTB8aUos";
     // =========================================================================
@@ -339,6 +428,15 @@
             "memes": { id: "memes", name: "memes", type: "text" },
             "voice": { id: "voice", name: "Voice Lounge", type: "voice" }
           }
+        },
+        "coding-hub": {
+          id: "coding-hub",
+          name: "Coding Hub",
+          icon: "code",
+          channels: {
+            "tech": { id: "tech", name: "tech-talk", type: "text" },
+            "showcase": { id: "showcase", name: "showcase", type: "text" }
+          }
         }
       },
       currentServer: "sdr-central",
@@ -347,12 +445,12 @@
     };
 
     window.addEventListener('DOMContentLoaded', () => {
-      updateHeaderProfileUI();
+      updateProfileUI();
       renderServers();
       renderChannels();
       loadMessagesForCurrentChannel();
       initAbly();
-      
+
       const savedTheme = localStorage.getItem('sdr_theme') || 'dark';
       setTheme(savedTheme);
     });
@@ -366,18 +464,23 @@
         document.getElementById('api-warning').classList.remove('hidden');
         document.getElementById('connection-status').innerText = "Local Mode";
         document.getElementById('connection-status').className = "bg-purple-500/20 text-purple-400 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30";
-        updateMemberList([]);
+        renderMemberList([]);
         return;
       }
 
       try {
         ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: user.id });
         ably.connection.on('connected', () => {
-          document.getElementById('connection-status').innerText = "Live Cloud";
+          document.getElementById('connection-status').innerText = "Ably Live";
           document.getElementById('connection-status').className = "bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30";
           subscribeToChannel();
         });
-      } catch (e) {}
+        ably.connection.on('failed', () => {
+          document.getElementById('connection-status').innerText = "Local Offline";
+        });
+      } catch (e) {
+        console.error("Ably Init Error:", e);
+      }
     }
 
     function subscribeToChannel() {
@@ -387,9 +490,12 @@
       const chanKey = `sdr_${state.currentServer}_${state.currentChannel}`;
       channel = ably.channels.get(chanKey);
 
-      // Single Unified Handler to Prevent Double Sending
       channel.subscribe('msg', (msg) => {
         handleIncomingMessage(msg.data);
+      });
+
+      channel.subscribe('mutation', (msg) => {
+        handleIncomingMutation(msg.data);
       });
 
       channel.subscribe('typing', (msg) => {
@@ -404,27 +510,33 @@
     function updatePresenceMembers() {
       if (!channel) return;
       channel.presence.get((err, members) => {
-        if (!err) updateMemberList(members);
+        if (!err) renderMemberList(members);
       });
     }
 
-    function updateMemberList(members) {
+    function renderMemberList(members) {
       const list = document.getElementById('member-list');
-      document.getElementById('member-count').innerText = members.length || 1;
+      document.getElementById('member-count').innerText = (members && members.length) ? members.length : 1;
       
       let html = `
         <div class="flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-[#1e1f22]">
-          <img src="${user.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+          <div class="relative">
+            <img src="${user.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+            <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
+          </div>
           <span class="text-xs font-semibold text-gray-200 truncate">${user.name} (You)</span>
         </div>
       `;
 
-      if (members) {
+      if (members && members.length) {
         members.forEach(m => {
           if (m.clientId !== user.id && m.data) {
             html += `
               <div class="flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-[#1e1f22]">
-                <img src="${m.data.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+                <div class="relative">
+                  <img src="${m.data.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+                  <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
+                </div>
                 <span class="text-xs font-semibold text-gray-300 truncate">${m.data.name}</span>
               </div>
             `;
@@ -504,7 +616,7 @@
       let html = `
         <div class="border-b border-gray-800 pb-4 mb-4">
           <h2 class="text-2xl font-bold text-white">Welcome to #${state.servers[state.currentServer].channels[state.currentChannel].name}!</h2>
-          <p class="text-sm text-gray-400">This is the beginning of the channel history.</p>
+          <p class="text-sm text-gray-400">This is the start of the channel history.</p>
         </div>
       `;
 
@@ -519,42 +631,112 @@
 
     function renderMessageHTML(msg, idx) {
       const chanId = `${state.currentServer}_${state.currentChannel}`;
-      let content = `<p class="text-sm text-gray-200 mt-0.5 whitespace-pre-wrap">${escapeHTML(msg.text)}</p>`;
+      
+      if (msg.type === 'poll') {
+        let totalVotes = 0;
+        Object.values(msg.pollData.votes || {}).forEach(v => totalVotes += v);
+
+        let optionsHTML = '';
+        msg.pollData.options.forEach((opt, oIdx) => {
+          const count = (msg.pollData.votes && msg.pollData.votes[oIdx]) || 0;
+          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          optionsHTML += `
+            <button onclick="votePoll('${chanId}', '${msg.msgId}', ${oIdx})" class="w-full bg-[#2b2d31] hover:bg-[#35373c] p-2.5 rounded-xl text-left relative overflow-hidden transition border border-gray-700/50 my-1">
+              <div class="absolute inset-0 bg-indigo-600/20 transition-all duration-300" style="width: ${pct}%"></div>
+              <div class="flex justify-between items-center relative z-10 text-xs font-semibold">
+                <span class="text-gray-200">${opt}</span>
+                <span class="text-indigo-400 font-bold">${count} votes (${pct}%)</span>
+              </div>
+            </button>
+          `;
+        });
+
+        return `
+          <div class="flex items-start space-x-3 my-3" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full font-bold">📊 POLL</span>
+              </div>
+              <h4 class="font-bold text-white text-sm mb-2">${msg.pollData.question}</h4>
+              <div>${optionsHTML}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'tictactoe') {
+        let boardHTML = '<div class="grid grid-cols-3 gap-1 w-36 my-2">';
+        msg.gameData.board.forEach((cell, cellIdx) => {
+          boardHTML += `<button onclick="playTicTacToe('${chanId}', '${msg.msgId}', ${cellIdx})" class="w-11 h-11 bg-[#1e1f22] text-sm font-bold text-white rounded-lg border border-gray-700 hover:bg-gray-800 flex items-center justify-center">${cell || ''}</button>`;
+        });
+        boardHTML += '</div>';
+
+        return `
+          <div class="flex items-start space-x-3 my-3" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="font-bold text-xs text-emerald-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🎮 TIC-TAC-TOE</span>
+              </div>
+              <p class="text-xs text-gray-300">Turn: <strong class="text-indigo-400">${msg.gameData.turn}</strong></p>
+              ${boardHTML}
+            </div>
+          </div>
+        `;
+      }
+
+      let content = parseMarkdownHTML(msg.text);
       if (msg.image) {
         content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
       }
 
-      // Live Emoji Reactions Badges
       let reactionsHTML = '';
-      if (msg.reactions) {
+      if (msg.reactions && Object.keys(msg.reactions).length > 0) {
         reactionsHTML = '<div class="flex flex-wrap gap-1 mt-1.5">';
         Object.keys(msg.reactions).forEach(emoji => {
-          reactionsHTML += `<button onclick="addReaction('${chanId}', ${idx}, '${emoji}')" class="bg-[#2b2d31] border border-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-indigo-600/20">${emoji} ${msg.reactions[emoji]}</button>`;
+          reactionsHTML += `<button onclick="addReaction('${chanId}', '${msg.msgId}', '${emoji}')" class="bg-[#2b2d31] border border-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-indigo-600/20 transition">${emoji} ${msg.reactions[emoji]}</button>`;
         });
         reactionsHTML += '</div>';
       }
 
       return `
-        <div class="flex items-start space-x-3 my-3 group relative hover:bg-[#2b2d31]/30 p-1 rounded-xl transition">
+        <div class="flex items-start space-x-3 my-3 group relative hover:bg-[#2b2d31]/30 p-1.5 rounded-xl transition" id="msg-card-${msg.msgId}">
           <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-          <div class="flex-1">
+          <div class="flex-1 overflow-hidden">
             <div class="flex items-center space-x-2">
               <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
               <span class="text-[10px] text-gray-500">${msg.time}</span>
             </div>
-            ${content}
+            <div class="text-sm text-gray-200 mt-0.5 whitespace-pre-wrap">${content}</div>
             ${reactionsHTML}
           </div>
 
-          <!-- Hover Action Toolbar -->
           <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
-            <button onclick="addReaction('${chanId}', ${idx}, '❤️')" class="hover:text-red-400">❤️</button>
-            <button onclick="addReaction('${chanId}', ${idx}, '🔥')" class="hover:text-yellow-400">🔥</button>
-            <button onclick="addReaction('${chanId}', ${idx}, '👍')" class="hover:text-blue-400">👍</button>
-            <button onclick="pinMessage('${chanId}', ${idx})" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '❤️')" class="hover:text-red-400">❤️</button>
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '🔥')" class="hover:text-yellow-400">🔥</button>
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '👍')" class="hover:text-blue-400">👍</button>
+            <button onclick="pinMessage('${chanId}', '${msg.msgId}')" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
           </div>
         </div>
       `;
+    }
+
+    function parseMarkdownHTML(text) {
+      let result = escapeHTML(text);
+      if (result.startsWith('```') && result.endsWith('```')) {
+        const code = result.slice(3, -3);
+        return `<pre class="bg-gray-950 p-3 rounded-lg text-xs font-mono text-emerald-400 border border-gray-800 overflow-x-auto my-1">${code}</pre>`;
+      }
+      result = result.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler-text" onclick="this.classList.toggle(\'revealed\')">\$1</span>');
+      result = result.replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>');
+      result = result.replace(/\*(.*?)\*/g, '<em>\$1</em>');
+      result = result.replace(/~(.*?)~/g, '<del>\$1</del>');
+      return result;
     }
 
     function handleSendMessage(e) {
@@ -563,6 +745,40 @@
       const text = input.value.trim();
       if (!text) return;
 
+      if (text.startsWith('/poll')) {
+        const matches = text.match(/"([^"]+)"/g);
+        if (matches && matches.length >= 3) {
+          const question = matches[0].replace(/"/g, '');
+          const options = matches.slice(1).map(m => m.replace(/"/g, ''));
+          const pollMsg = {
+            msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+            user: user,
+            type: 'poll',
+            pollData: { question, options, votes: {} },
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          sendOrPublish(pollMsg);
+          input.value = '';
+          return;
+        } else {
+          alert('Format: /poll "Question" "Opt1" "Opt2"');
+          return;
+        }
+      }
+
+      if (text.startsWith('/tictactoe')) {
+        const gameMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'tictactoe',
+          gameData: { board: Array(9).fill(null), turn: "X" },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(gameMsg);
+        input.value = '';
+        return;
+      }
+
       const msg = {
         msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
         user: user,
@@ -570,19 +786,22 @@
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
+      sendOrPublish(msg);
+      input.value = '';
+    }
+
+    function sendOrPublish(msg) {
       if (ably && channel) {
         channel.publish('msg', msg);
       } else {
         handleIncomingMessage(msg);
       }
-      input.value = '';
     }
 
     function handleIncomingMessage(msg) {
       const chanId = `${state.currentServer}_${state.currentChannel}`;
       if (!state.messages[chanId]) state.messages[chanId] = [];
 
-      // Check Duplicate Message ID
       if (state.messages[chanId].some(m => m.msgId === msg.msgId)) return;
 
       state.messages[chanId].push(msg);
@@ -591,19 +810,81 @@
       if (msg.user.id !== user.id) playAudio();
     }
 
-    function addReaction(chanId, msgIdx, emoji) {
-      const msg = state.messages[chanId][msgIdx];
-      if (!msg.reactions) msg.reactions = {};
-      msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
+    function votePoll(chanId, msgId, optIdx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        if (!msg.pollData.votes) msg.pollData.votes = {};
+        msg.pollData.votes[optIdx] = (msg.pollData.votes[optIdx] || 0) + 1;
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && channel) {
+          channel.publish('mutation', { type: 'pollVote', msgId, optIdx });
+        }
+      }
+    }
+
+    function playTicTacToe(chanId, msgId, cellIdx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg && !msg.gameData.board[cellIdx]) {
+        msg.gameData.board[cellIdx] = msg.gameData.turn;
+        msg.gameData.turn = msg.gameData.turn === "X" ? "O" : "X";
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && channel) {
+          channel.publish('mutation', { type: 'tictactoeMove', msgId, cellIdx, turn: msg.gameData.turn });
+        }
+      }
+    }
+
+    function addReaction(chanId, msgId, emoji) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        if (!msg.reactions) msg.reactions = {};
+        msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && channel) {
+          channel.publish('mutation', { type: 'reaction', msgId, emoji });
+        }
+      }
+    }
+
+    function handleIncomingMutation(data) {
+      const chanId = `${state.currentServer}_${state.currentChannel}`;
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === data.msgId);
+      
+      if (!msg) return;
+
+      if (data.type === 'pollVote') {
+        if (!msg.pollData.votes) msg.pollData.votes = {};
+        msg.pollData.votes[data.optIdx] = (msg.pollData.votes[data.optIdx] || 0) + 1;
+      } else if (data.type === 'tictactoeMove') {
+        msg.gameData.board[data.cellIdx] = data.turn === "X" ? "O" : "X";
+        msg.gameData.turn = data.turn;
+      } else if (data.type === 'reaction') {
+        if (!msg.reactions) msg.reactions = {};
+        msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1;
+      }
+
       saveState();
       loadMessagesForCurrentChannel();
     }
 
-    function pinMessage(chanId, msgIdx) {
-      const msg = state.messages[chanId][msgIdx];
-      msg.isPinned = true;
-      saveState();
-      updatePinnedList();
+    function pinMessage(chanId, msgId) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        msg.isPinned = true;
+        saveState();
+        updatePinnedList();
+      }
     }
 
     function updatePinnedList() {
@@ -638,6 +919,54 @@
       input.focus();
     }
 
+    function insertCommand(cmd) {
+      const input = document.getElementById('chat-input');
+      input.value = cmd;
+      input.focus();
+    }
+
+    function playSoundFx(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'airhorn') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'quack') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'levelup') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(261, ctx.currentTime);
+          osc.frequency.setValueAtTime(329, ctx.currentTime + 0.08);
+          osc.frequency.setValueAtTime(392, ctx.currentTime + 0.16);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        }
+      } catch (e) {}
+    }
+
+    function openSoundboardModal() { document.getElementById('soundboard-modal').classList.remove('hidden'); }
+    function closeSoundboardModal() { document.getElementById('soundboard-modal').classList.add('hidden'); }
+
     function setTheme(theme) {
       const body = document.getElementById('app-body');
       body.className = body.className.replace(/theme-\w+/g, '');
@@ -662,8 +991,7 @@
             image: event.target.result,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
-          if (ably && channel) channel.publish('msg', msg);
-          else handleIncomingMessage(msg);
+          sendOrPublish(msg);
         };
         reader.readAsDataURL(file);
       }
@@ -681,8 +1009,7 @@
             image: event.target.result,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
-          if (ably && channel) channel.publish('msg', msg);
-          else handleIncomingMessage(msg);
+          sendOrPublish(msg);
         };
         reader.readAsDataURL(file);
       }
@@ -701,6 +1028,14 @@
       typingTimer = setTimeout(() => ind.classList.add('hidden'), 2000);
     }
 
+    function toggleMuteMic(btn) {
+      btn.classList.toggle('text-red-400');
+    }
+
+    function toggleDeafen(btn) {
+      btn.classList.toggle('text-red-400');
+    }
+
     function openProfileModal() {
       document.getElementById('modal-name-input').value = user.name;
       document.getElementById('modal-avatar-input').value = user.avatar;
@@ -712,18 +1047,17 @@
       user.avatar = document.getElementById('modal-avatar-input').value.trim() || user.avatar;
       localStorage.setItem('sdr_name', user.name);
       localStorage.setItem('sdr_avatar', user.avatar);
-      updateHeaderProfileUI();
+      updateProfileUI();
       closeProfileModal();
       if (ably && channel) channel.presence.update({ name: user.name, avatar: user.avatar });
     }
-    function updateHeaderProfileUI() {
-      document.getElementById('header-username').innerText = user.name;
-      document.getElementById('header-avatar').src = user.avatar;
+    function updateProfileUI() {
+      document.getElementById('user-name-bottom').innerText = user.name;
+      document.getElementById('user-avatar-bottom').src = user.avatar;
       document.getElementById('call-avatar-main').src = user.avatar;
       document.getElementById('call-name-main').innerText = user.name;
     }
 
-    function openCreateChannelModal() { document.getElementById('channel-modal')?.classList.remove('hidden'); }
     function toggleVoiceCall() {
       isVoiceActive = !isVoiceActive;
       document.getElementById('voice-panel').classList.toggle('hidden', !isVoiceActive);
