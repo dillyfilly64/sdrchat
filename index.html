@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SDRChat — Ultimate Discord Alternative</title>
+  <title>SDRChat — The Ultimate Decentralized Discord Alternative</title>
   
   <!-- iOS PWA Optimizations -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,6 +38,11 @@
   </script>
 
   <style>
+    /* Custom Theme Overrides */
+    body.theme-oled { --bg-dark: #000000; --bg-server: #0a0a0a; --bg-sidebar: #121212; --bg-chat: #181818; }
+    body.theme-cyberpunk { --bg-dark: #0d0221; --bg-server: #0f0529; --bg-sidebar: #1a083a; --bg-chat: #240c4f; }
+    body.theme-vaporwave { --bg-dark: #1a0933; --bg-server: #2b0e4a; --bg-sidebar: #3d1466; --bg-chat: #4e1a80; }
+
     /* Custom Discord-Style Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #2b2d31; }
@@ -45,9 +50,9 @@
     ::-webkit-scrollbar-thumb:hover { background: #111214; }
     
     .glass-modal {
-      background: rgba(30, 31, 34, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(30, 31, 34, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -56,9 +61,18 @@
       50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
     }
     .speaking-ring { animation: pulseGlow 1.5s infinite; }
+
+    /* Equalizer Bars */
+    @keyframes eqBar {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .eq-bar { animation: eqBar 1.2s infinite ease-in-out; }
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; }
   </style>
 </head>
-<body class="h-full flex flex-col overflow-hidden bg-[#111214] font-sans text-gray-200 select-none">
+<body id="app-body" class="h-full flex flex-col overflow-hidden bg-[#111214] font-sans text-gray-200 select-none">
 
   <!-- TOP APP HEADER -->
   <header class="h-12 border-b border-[#1f2023] bg-[#1e1f22] flex items-center justify-between px-4 shrink-0 z-30">
@@ -77,14 +91,25 @@
       </div>
     </div>
 
-    <!-- Right Controls -->
-    <div class="flex items-center space-x-3">
-      <button onclick="openCreateServerModal()" class="text-xs bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 rounded-lg transition font-medium">
-        <i class="fa-solid fa-plus mr-1"></i> New Server
+    <!-- Header Tools & User identity -->
+    <div class="flex items-center space-x-2">
+      <!-- Pinned Messages Drawer Toggle -->
+      <button onclick="togglePinnedDrawer()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition relative" title="Pinned Messages">
+        <i class="fa-solid fa-thumbtack text-sm"></i>
+        <span id="pinned-count" class="hidden absolute -top-1 -right-1 bg-indigo-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
       </button>
-      <button id="sound-toggle" onclick="toggleSound()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition">
+
+      <!-- Theme Store Switcher Button -->
+      <button onclick="openThemeModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Themes & Customization">
+        <i class="fa-solid fa-palette text-indigo-400 text-sm"></i>
+      </button>
+
+      <!-- Sound FX Toggle -->
+      <button id="sound-toggle" onclick="toggleSound()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Audio FX">
         <i class="fa-solid fa-volume-high text-indigo-400" id="sound-icon"></i>
       </button>
+
+      <!-- User Profile Pill -->
       <button onclick="openProfileModal()" class="flex items-center space-x-2 bg-[#2b2d31] hover:bg-[#35373c] border border-gray-700/50 rounded-full py-1 px-3 transition">
         <img id="header-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-5 h-5 rounded-full bg-gray-900 border border-gray-600">
         <span id="header-username" class="text-xs font-semibold text-gray-200 max-w-[100px] truncate">Anonymous</span>
@@ -114,7 +139,7 @@
         <!-- Injected Channels -->
       </div>
 
-      <!-- Voice Connected Status Panel -->
+      <!-- Active Voice Lounge Status Card -->
       <div id="voice-panel" class="hidden p-3 bg-[#111214] border-t border-emerald-500/30 flex flex-col space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
@@ -123,8 +148,13 @@
           </div>
           <button onclick="toggleVoiceCall()" class="text-red-400 hover:text-red-300 text-xs font-bold">Disconnect</button>
         </div>
-        <button onclick="openVideoCallModal()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 text-xs font-bold py-1.5 rounded-lg transition">
-          <i class="fa-solid fa-video mr-1"></i> Open Call Overlay
+        <div class="flex items-end space-x-1 h-4 justify-center bg-[#2b2d31] rounded py-1">
+          <div class="eq-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="eq-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="eq-bar w-1 bg-emerald-400 rounded-full"></div>
+        </div>
+        <button onclick="openVideoCallModal()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 text-xs font-bold py-1 rounded-lg transition">
+          <i class="fa-solid fa-video mr-1"></i> Call Overlay
         </button>
       </div>
     </aside>
@@ -132,10 +162,10 @@
     <!-- 3. MAIN CHAT AREA -->
     <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
       
-      <!-- API Missing Warning -->
+      <!-- API Missing Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> in code to sync globally across devices!</span>
+        <span><strong>Ably Key Needed:</strong> Replace <code>YOUR_ABLY_API_KEY_HERE</code> on line 351 for cross-device cloud sync!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -143,15 +173,34 @@
         <!-- Injected Messages -->
       </div>
 
-      <!-- Typing Indicator -->
+      <!-- PINNED MESSAGES DRAWER PANEL -->
+      <div id="pinned-drawer" class="hidden absolute top-0 right-0 w-80 bg-[#2b2d31] border-l border-b border-gray-700/80 shadow-2xl z-20 max-h-96 overflow-y-auto p-3">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2 mb-2">
+          <span class="text-xs font-bold text-white uppercase"><i class="fa-solid fa-thumbtack text-indigo-400 mr-1"></i> Pinned Messages</span>
+          <button onclick="togglePinnedDrawer()" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="pinned-messages-list" class="space-y-2">
+          <!-- Injected Pinned Msgs -->
+        </div>
+      </div>
+
+      <!-- Typing Indicator Bar -->
       <div id="typing-indicator" class="px-4 py-1 text-xs text-gray-400 italic bg-[#313338] h-6 flex items-center hidden">
         <span>Someone is typing...</span>
       </div>
 
-      <!-- Chat Input Form -->
+      <!-- Form Toolbar & Chat Input -->
       <div class="p-3 bg-[#313338] border-t border-[#222327]">
+        <!-- Formatting Quick Buttons -->
+        <div class="flex items-center space-x-2 mb-1.5 text-xs text-gray-400">
+          <button onclick="insertFormat('**', '**')" class="hover:text-white px-1 font-bold">B</button>
+          <button onclick="insertFormat('*', '*')" class="hover:text-white px-1 italic">I</button>
+          <button onclick="insertFormat('```', '```')" class="hover:text-white px-1 font-mono">&lt;/&gt;</button>
+          <button onclick="insertFormat('||', '||')" class="hover:text-white px-1">Spoiler</button>
+        </div>
+
         <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
-          <label class="text-gray-400 hover:text-white cursor-pointer text-lg transition" title="Attach File">
+          <label class="text-gray-400 hover:text-white cursor-pointer text-lg transition" title="Attach Image or File">
             <i class="fa-solid fa-circle-plus"></i>
             <input type="file" id="file-input" onchange="handleFileSelect(event)" class="hidden">
           </label>
@@ -167,7 +216,7 @@
 
     <!-- 4. ACTIVE MEMBERS SIDEBAR -->
     <aside class="w-56 bg-[#2b2d31] border-l border-[#1f2023] p-3 hidden lg:block shrink-0 overflow-y-auto">
-      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Online — <span id="member-count">1</span></h3>
+      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Online Peers — <span id="member-count">1</span></h3>
       <div id="member-list" class="space-y-2">
         <!-- Injected Members -->
       </div>
@@ -175,12 +224,43 @@
 
   </div>
 
+  <!-- THEME STORE MODAL -->
+  <div id="theme-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-palette text-indigo-400"></i>
+        <span>Theme Store & Customization</span>
+      </h3>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button onclick="setTheme('dark')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 text-left hover:border-indigo-500 transition">
+          <div class="font-bold text-sm text-white">Discord Dark</div>
+          <p class="text-[11px] text-gray-400">Classic dark theme</p>
+        </button>
+        <button onclick="setTheme('oled')" class="bg-black p-3 rounded-xl border border-gray-800 text-left hover:border-indigo-500 transition">
+          <div class="font-bold text-sm text-white">OLED Black</div>
+          <p class="text-[11px] text-gray-400">Pure pitch black</p>
+        </button>
+        <button onclick="setTheme('cyberpunk')" class="bg-[#0f0529] p-3 rounded-xl border border-purple-700 text-left hover:border-pink-500 transition">
+          <div class="font-bold text-sm text-pink-400">Cyberpunk</div>
+          <p class="text-[11px] text-gray-400">Neon violet vibe</p>
+        </button>
+        <button onclick="setTheme('vaporwave')" class="bg-[#2b0e4a] p-3 rounded-xl border border-pink-700 text-left hover:border-yellow-400 transition">
+          <div class="font-bold text-sm text-yellow-300">Vaporwave</div>
+          <p class="text-[11px] text-gray-400">Retro 80s aesthetic</p>
+        </button>
+      </div>
+      <div class="flex justify-end">
+        <button onclick="closeThemeModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- VOICE / VIDEO CALL OVERLAY MODAL -->
   <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
     <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-video text-emerald-400"></i>
-        <span class="font-bold text-white">Voice & Video Lounge</span>
+        <span class="font-bold text-white">Voice & Video Lounge Grid</span>
       </div>
       <button onclick="closeVideoCallModal()" class="text-gray-400 hover:text-white text-sm bg-gray-800 px-3 py-1.5 rounded-lg">Minimize</button>
     </div>
@@ -194,23 +274,22 @@
         <div class="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 text-2xl mb-2">
           <i class="fa-solid fa-user"></i>
         </div>
-        <span class="font-bold text-gray-400 text-sm">Waiting for peers...</span>
+        <span class="font-bold text-gray-400 text-sm">Waiting for peers to join...</span>
       </div>
     </div>
     <div class="h-20 bg-[#1e1f22] border-t border-gray-800 flex items-center justify-center space-x-4 shrink-0">
       <button onclick="toggleCallMic()" id="mic-btn" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition"><i class="fa-solid fa-microphone"></i></button>
       <button onclick="toggleCallCam()" id="cam-btn" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition"><i class="fa-solid fa-video"></i></button>
-      <button onclick="toggleScreenShare()" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition" title="Screen Share"><i class="fa-solid fa-desktop"></i></button>
       <button onclick="toggleVoiceCall(); closeVideoCallModal();" class="w-14 h-12 rounded-2xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center text-lg transition"><i class="fa-solid fa-phone-slash"></i></button>
     </div>
   </div>
 
-  <!-- PROFILE SETTINGS MODAL -->
+  <!-- PROFILE MODAL -->
   <div id="profile-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
       <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
         <i class="fa-solid fa-user-gear text-indigo-400"></i>
-        <span>User Profile & Identity</span>
+        <span>User Profile Settings</span>
       </h3>
       <div class="space-y-4">
         <div>
@@ -223,57 +302,16 @@
         </div>
         <div class="flex justify-end space-x-2 pt-3">
           <button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
-          <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Changes</button>
+          <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Profile</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CREATE SERVER MODAL -->
-  <div id="server-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
-      <h3 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-server text-indigo-400 mr-2"></i> Create New Server</h3>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Server Name</label>
-          <input id="new-server-name" type="text" placeholder="My Awesome Server" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button onclick="closeCreateServerModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
-          <button onclick="createServer()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Create Server</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CREATE CHANNEL MODAL -->
-  <div id="channel-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-modal w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
-      <h3 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-hashtag text-indigo-400 mr-2"></i> Create Channel</h3>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Channel Name</label>
-          <input id="new-channel-name" type="text" placeholder="general-chat" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Channel Type</label>
-          <select id="new-channel-type" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-            <option value="text">Text Channel</option>
-            <option value="voice">Voice Channel</option>
-          </select>
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button onclick="closeCreateChannelModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
-          <button onclick="createChannel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Create</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT APP ENGINE -->
+  <!-- JAVASCRIPT ENGINE -->
   <script>
     // =========================================================================
-    // 🔑 ABLI REALTIME API KEY CONFIGURATION
+    // 🔑 ABLY API KEY PLACEMENT
     // =========================================================================
     const ABLY_API_KEY = "P-x9Xw.2O-Uiw:mGxpHZynD8v6ZcsTSbOs1OBwntMAtW_dcTgvTB8aUos";
     // =========================================================================
@@ -284,14 +322,12 @@
     let isVoiceActive = false;
     let typingTimer = null;
 
-    // Default User Profile
     let user = {
       id: "usr_" + Math.random().toString(36).substring(2, 9),
       name: localStorage.getItem('sdr_name') || "User_" + Math.floor(100 + Math.random() * 900),
       avatar: localStorage.getItem('sdr_avatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=" + Math.random()
     };
 
-    // State Data Store (Persisted & Synced)
     let state = JSON.parse(localStorage.getItem('sdr_state')) || {
       servers: {
         "sdr-central": {
@@ -303,20 +339,11 @@
             "memes": { id: "memes", name: "memes", type: "text" },
             "voice": { id: "voice", name: "Voice Lounge", type: "voice" }
           }
-        },
-        "coding-hub": {
-          id: "coding-hub",
-          name: "Coding Hub",
-          icon: "code",
-          channels: {
-            "tech": { id: "tech", name: "tech-talk", type: "text" },
-            "showcase": { id: "showcase", name: "showcase", type: "text" }
-          }
         }
       },
       currentServer: "sdr-central",
       currentChannel: "general",
-      messages: {} // channelId -> array of messages
+      messages: {}
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -325,26 +352,15 @@
       renderChannels();
       loadMessagesForCurrentChannel();
       initAbly();
-      requestNotificationPermission();
+      
+      const savedTheme = localStorage.getItem('sdr_theme') || 'dark';
+      setTheme(savedTheme);
     });
 
     function saveState() {
       localStorage.setItem('sdr_state', JSON.stringify(state));
     }
 
-    function requestNotificationPermission() {
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
-    }
-
-    function sendDesktopNotification(title, body) {
-      if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
-        new Notification(title, { body: body, icon: user.avatar });
-      }
-    }
-
-    // Ably Engine
     function initAbly() {
       if (!ABLY_API_KEY || ABLY_API_KEY === "YOUR_ABLY_API_KEY_HERE") {
         document.getElementById('api-warning').classList.remove('hidden');
@@ -357,13 +373,11 @@
       try {
         ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: user.id });
         ably.connection.on('connected', () => {
-          document.getElementById('connection-status').innerText = "Ably Live";
+          document.getElementById('connection-status').innerText = "Live Cloud";
           document.getElementById('connection-status').className = "bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30";
           subscribeToChannel();
         });
-      } catch (e) {
-        console.error("Ably error:", e);
-      }
+      } catch (e) {}
     }
 
     function subscribeToChannel() {
@@ -373,14 +387,13 @@
       const chanKey = `sdr_${state.currentServer}_${state.currentChannel}`;
       channel = ably.channels.get(chanKey);
 
+      // Single Unified Handler to Prevent Double Sending
       channel.subscribe('msg', (msg) => {
         handleIncomingMessage(msg.data);
       });
 
       channel.subscribe('typing', (msg) => {
-        if (msg.data.userId !== user.id) {
-          showTypingIndicator(msg.data.userName);
-        }
+        if (msg.data.userId !== user.id) showTypingIndicator(msg.data.userName);
       });
 
       channel.presence.enter({ name: user.name, avatar: user.avatar });
@@ -391,8 +404,7 @@
     function updatePresenceMembers() {
       if (!channel) return;
       channel.presence.get((err, members) => {
-        if (err) return;
-        updateMemberList(members);
+        if (!err) updateMemberList(members);
       });
     }
 
@@ -407,7 +419,7 @@
         </div>
       `;
 
-      if (members && members.length > 0) {
+      if (members) {
         members.forEach(m => {
           if (m.clientId !== user.id && m.data) {
             html += `
@@ -422,18 +434,15 @@
       list.innerHTML = html;
     }
 
-    // Server & Channel UI Rendering
     function renderServers() {
       const container = document.getElementById('servers-bar');
       let html = '';
-      
       Object.keys(state.servers).forEach(srvKey => {
         const srv = state.servers[srvKey];
         const isActive = state.currentServer === srvKey;
         html += `
           <button onclick="switchServer('${srvKey}')" class="relative group w-11 h-11 rounded-${isActive ? 'xl' : '2xl'} bg-${isActive ? 'indigo-600' : '[#2b2d31]'} hover:bg-indigo-600 flex items-center justify-center text-white transition-all duration-200 shadow-md">
             <i class="fa-solid fa-${srv.icon || 'bolt'} text-lg"></i>
-            <span class="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">${srv.name}</span>
           </button>
         `;
       });
@@ -443,7 +452,6 @@
     function renderChannels() {
       const srv = state.servers[state.currentServer];
       document.getElementById('current-server-title').innerText = srv.name;
-      
       const container = document.getElementById('channels-list');
       let html = '<p class="px-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Channels</p><div class="space-y-0.5">';
 
@@ -451,25 +459,21 @@
         const chan = srv.channels[chanKey];
         const isActive = state.currentChannel === chanKey;
         const icon = chan.type === 'voice' ? 'volume-high text-emerald-400' : 'hashtag text-gray-400';
-        
         html += `
           <button onclick="switchChannel('${chanKey}')" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-sm ${isActive ? 'bg-[#35373c] text-white font-medium' : 'text-gray-400 hover:bg-[#35373c]/50 hover:text-gray-200'} transition">
             <div class="flex items-center space-x-2">
               <i class="fa-solid fa-${icon}"></i>
               <span>${chan.name}</span>
             </div>
-            ${chan.type === 'voice' ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 rounded">RTC</span>' : ''}
           </button>
         `;
       });
-      html += '</div>';
-      container.innerHTML = html;
+      container.innerHTML = html + '</div>';
     }
 
     function switchServer(srvKey) {
       state.currentServer = srvKey;
-      const firstChan = Object.keys(state.servers[srvKey].channels)[0];
-      state.currentChannel = firstChan;
+      state.currentChannel = Object.keys(state.servers[srvKey].channels)[0];
       saveState();
       renderServers();
       renderChannels();
@@ -478,8 +482,7 @@
     }
 
     function switchChannel(chanKey) {
-      const srv = state.servers[state.currentServer];
-      if (srv.channels[chanKey].type === 'voice') {
+      if (state.servers[state.currentServer].channels[chanKey].type === 'voice') {
         toggleVoiceCall();
         openVideoCallModal();
         return;
@@ -491,7 +494,6 @@
       if (ably) subscribeToChannel();
     }
 
-    // Messaging & Polls Engine
     function loadMessagesForCurrentChannel() {
       const container = document.getElementById('chat-messages');
       const chanId = `${state.currentServer}_${state.currentChannel}`;
@@ -501,9 +503,8 @@
 
       let html = `
         <div class="border-b border-gray-800 pb-4 mb-4">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl font-bold mb-2">#</div>
           <h2 class="text-2xl font-bold text-white">Welcome to #${state.servers[state.currentServer].channels[state.currentChannel].name}!</h2>
-          <p class="text-sm text-gray-400">This is the start of the channel history.</p>
+          <p class="text-sm text-gray-400">This is the beginning of the channel history.</p>
         </div>
       `;
 
@@ -513,62 +514,44 @@
 
       container.innerHTML = html;
       container.scrollTop = container.scrollHeight;
+      updatePinnedList();
     }
 
     function renderMessageHTML(msg, idx) {
       const chanId = `${state.currentServer}_${state.currentChannel}`;
-      
-      // Check if poll
-      if (msg.type === 'poll') {
-        let totalVotes = 0;
-        Object.values(msg.pollData.votes || {}).forEach(vCount => totalVotes += vCount);
-
-        let optionsHTML = '';
-        msg.pollData.options.forEach((opt, oIdx) => {
-          const count = (msg.pollData.votes && msg.pollData.votes[oIdx]) || 0;
-          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-          optionsHTML += `
-            <button onclick="votePoll('${chanId}', ${idx}, ${oIdx})" class="w-full bg-[#2b2d31] hover:bg-[#35373c] p-2.5 rounded-xl text-left relative overflow-hidden transition border border-gray-700/50">
-              <div class="absolute inset-0 bg-indigo-600/20 transition-all duration-300" style="width: ${pct}%"></div>
-              <div class="flex justify-between items-center relative z-10 text-xs font-semibold">
-                <span>${opt}</span>
-                <span class="text-indigo-400">${count} votes (${pct}%)</span>
-              </div>
-            </button>
-          `;
-        });
-
-        return `
-          <div class="flex items-start space-x-3 my-3">
-            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-xl bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700">
-              <div class="flex items-center space-x-2 mb-2">
-                <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
-                <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full">📊 POLL</span>
-              </div>
-              <h4 class="font-bold text-white text-sm mb-3">${msg.pollData.question}</h4>
-              <div class="space-y-2">${optionsHTML}</div>
-            </div>
-          </div>
-        `;
+      let content = `<p class="text-sm text-gray-200 mt-0.5 whitespace-pre-wrap">${escapeHTML(msg.text)}</p>`;
+      if (msg.image) {
+        content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
       }
 
-      // Standard message / image attachment
-      let contentHTML = `<p class="text-sm text-gray-200 mt-0.5 whitespace-pre-wrap">${escapeHTML(msg.text)}</p>`;
-      if (msg.image) {
-        contentHTML += `<div class="mt-2"><img src="${msg.image}" class="max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md"></div>`;
+      // Live Emoji Reactions Badges
+      let reactionsHTML = '';
+      if (msg.reactions) {
+        reactionsHTML = '<div class="flex flex-wrap gap-1 mt-1.5">';
+        Object.keys(msg.reactions).forEach(emoji => {
+          reactionsHTML += `<button onclick="addReaction('${chanId}', ${idx}, '${emoji}')" class="bg-[#2b2d31] border border-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-indigo-600/20">${emoji} ${msg.reactions[emoji]}</button>`;
+        });
+        reactionsHTML += '</div>';
       }
 
       return `
-        <div class="flex items-start space-x-3 my-3">
+        <div class="flex items-start space-x-3 my-3 group relative hover:bg-[#2b2d31]/30 p-1 rounded-xl transition">
           <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
           <div class="flex-1">
             <div class="flex items-center space-x-2">
               <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
               <span class="text-[10px] text-gray-500">${msg.time}</span>
             </div>
-            ${contentHTML}
+            ${content}
+            ${reactionsHTML}
+          </div>
+
+          <!-- Hover Action Toolbar -->
+          <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
+            <button onclick="addReaction('${chanId}', ${idx}, '❤️')" class="hover:text-red-400">❤️</button>
+            <button onclick="addReaction('${chanId}', ${idx}, '🔥')" class="hover:text-yellow-400">🔥</button>
+            <button onclick="addReaction('${chanId}', ${idx}, '👍')" class="hover:text-blue-400">👍</button>
+            <button onclick="pinMessage('${chanId}', ${idx})" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
           </div>
         </div>
       `;
@@ -580,94 +563,107 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // Handle /poll command: /poll "Question" "Opt1" "Opt2" ...
-      if (text.startsWith('/poll')) {
-        const matches = text.match(/"([^"]+)"/g);
-        if (matches && matches.length >= 3) {
-          const question = matches[0].replace(/"/g, '');
-          const options = matches.slice(1).map(m => m.replace(/"/g, ''));
-          
-          const pollMsg = {
-            user: user,
-            type: 'poll',
-            pollData: { question, options, votes: {} },
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
-          dispatchMessage(pollMsg);
-          input.value = '';
-          return;
-        } else {
-          alert('Usage format: /poll "Question" "Option 1" "Option 2"');
-          return;
-        }
-      }
-
-      if (text.startsWith('/roll')) {
-        const roll = Math.floor(Math.random() * 100) + 1;
-        dispatchMessage({ user: { name: "SDRBot", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Bot" }, text: `🎲 Rolled: **${roll}** (1-100)`, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-        input.value = '';
-        return;
-      }
-
       const msg = {
+        msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
         user: user,
         text: text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      dispatchMessage(msg);
-      input.value = '';
-    }
-
-    function dispatchMessage(msg) {
-      const chanId = `${state.currentServer}_${state.currentChannel}`;
-      if (!state.messages[chanId]) state.messages[chanId] = [];
-      state.messages[chanId].push(msg);
-      saveState();
-      loadMessagesForCurrentChannel();
-
       if (ably && channel) {
         channel.publish('msg', msg);
+      } else {
+        handleIncomingMessage(msg);
       }
-      playAudio();
+      input.value = '';
     }
 
     function handleIncomingMessage(msg) {
       const chanId = `${state.currentServer}_${state.currentChannel}`;
       if (!state.messages[chanId]) state.messages[chanId] = [];
+
+      // Check Duplicate Message ID
+      if (state.messages[chanId].some(m => m.msgId === msg.msgId)) return;
+
       state.messages[chanId].push(msg);
       saveState();
       loadMessagesForCurrentChannel();
-      if (msg.user.id !== user.id) {
-        playAudio();
-        sendDesktopNotification(msg.user.name, msg.text || "New poll / attachment");
-      }
+      if (msg.user.id !== user.id) playAudio();
     }
 
-    function votePoll(chanId, msgIdx, optIdx) {
+    function addReaction(chanId, msgIdx, emoji) {
       const msg = state.messages[chanId][msgIdx];
-      if (!msg.pollData.votes) msg.pollData.votes = {};
-      msg.pollData.votes[optIdx] = (msg.pollData.votes[optIdx] || 0) + 1;
+      if (!msg.reactions) msg.reactions = {};
+      msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
       saveState();
       loadMessagesForCurrentChannel();
-      if (ably && channel) {
-        channel.publish('msg', msg);
-      }
     }
 
-    // File Drag & Drop
+    function pinMessage(chanId, msgIdx) {
+      const msg = state.messages[chanId][msgIdx];
+      msg.isPinned = true;
+      saveState();
+      updatePinnedList();
+    }
+
+    function updatePinnedList() {
+      const chanId = `${state.currentServer}_${state.currentChannel}`;
+      const messages = state.messages[chanId] || [];
+      const pinned = messages.filter(m => m.isPinned);
+      
+      const countEl = document.getElementById('pinned-count');
+      if (pinned.length > 0) {
+        countEl.innerText = pinned.length;
+        countEl.classList.remove('hidden');
+      } else {
+        countEl.classList.add('hidden');
+      }
+
+      const listEl = document.getElementById('pinned-messages-list');
+      listEl.innerHTML = pinned.map(m => `
+        <div class="p-2 bg-[#1e1f22] rounded-lg border border-gray-700 text-xs">
+          <span class="font-bold text-indigo-400">${m.user.name}:</span>
+          <p class="text-gray-300 truncate">${m.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function togglePinnedDrawer() {
+      document.getElementById('pinned-drawer').classList.toggle('hidden');
+    }
+
+    function insertFormat(start, end) {
+      const input = document.getElementById('chat-input');
+      input.value += `${start}text${end}`;
+      input.focus();
+    }
+
+    function setTheme(theme) {
+      const body = document.getElementById('app-body');
+      body.className = body.className.replace(/theme-\w+/g, '');
+      if (theme !== 'dark') body.classList.add(`theme-${theme}`);
+      localStorage.setItem('sdr_theme', theme);
+      closeThemeModal();
+    }
+
+    function openThemeModal() { document.getElementById('theme-modal').classList.remove('hidden'); }
+    function closeThemeModal() { document.getElementById('theme-modal').classList.add('hidden'); }
+
     function handleFileDrop(e) {
       e.preventDefault();
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          dispatchMessage({
+          const msg = {
+            msgId: "m_" + Date.now(),
             user: user,
-            text: `Shared image: ${file.name}`,
+            text: `Attachment: ${file.name}`,
             image: event.target.result,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          });
+          };
+          if (ably && channel) channel.publish('msg', msg);
+          else handleIncomingMessage(msg);
         };
         reader.readAsDataURL(file);
       }
@@ -678,18 +674,20 @@
       if (file && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          dispatchMessage({
+          const msg = {
+            msgId: "m_" + Date.now(),
             user: user,
-            text: `Shared image: ${file.name}`,
+            text: `Attachment: ${file.name}`,
             image: event.target.result,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          });
+          };
+          if (ably && channel) channel.publish('msg', msg);
+          else handleIncomingMessage(msg);
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // Typing Indicators
     function handleTypingInput() {
       if (!ably || !channel) return;
       channel.publish('typing', { userId: user.id, userName: user.name });
@@ -700,12 +698,9 @@
       ind.querySelector('span').innerText = `${name} is typing...`;
       ind.classList.remove('hidden');
       clearTimeout(typingTimer);
-      typingTimer = setTimeout(() => {
-        ind.classList.add('hidden');
-      }, 2000);
+      typingTimer = setTimeout(() => ind.classList.add('hidden'), 2000);
     }
 
-    // Modals & Profile
     function openProfileModal() {
       document.getElementById('modal-name-input').value = user.name;
       document.getElementById('modal-avatar-input').value = user.avatar;
@@ -728,37 +723,7 @@
       document.getElementById('call-name-main').innerText = user.name;
     }
 
-    function openCreateServerModal() { document.getElementById('server-modal').classList.remove('hidden'); }
-    function closeCreateServerModal() { document.getElementById('server-modal').classList.add('hidden'); }
-    function createServer() {
-      const name = document.getElementById('new-server-name').value.trim();
-      if (!name) return;
-      const key = name.toLowerCase().replace(/\s+/g, '-');
-      state.servers[key] = {
-        id: key,
-        name: name,
-        icon: 'globe',
-        channels: { "general": { id: "general", name: "general", type: "text" } }
-      };
-      saveState();
-      closeCreateServerModal();
-      switchServer(key);
-    }
-
-    function openCreateChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
-    function closeCreateChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
-    function createChannel() {
-      const name = document.getElementById('new-channel-name').value.trim();
-      const type = document.getElementById('new-channel-type').value;
-      if (!name) return;
-      const key = name.toLowerCase().replace(/\s+/g, '-');
-      state.servers[state.currentServer].channels[key] = { id: key, name, type };
-      saveState();
-      closeCreateChannelModal();
-      renderChannels();
-    }
-
-    // Voice & Call UI
+    function openCreateChannelModal() { document.getElementById('channel-modal')?.classList.remove('hidden'); }
     function toggleVoiceCall() {
       isVoiceActive = !isVoiceActive;
       document.getElementById('voice-panel').classList.toggle('hidden', !isVoiceActive);
@@ -767,15 +732,13 @@
     function closeVideoCallModal() { document.getElementById('video-call-modal').classList.add('hidden'); }
     function toggleCallMic() { document.getElementById('mic-btn').classList.toggle('bg-red-600'); }
     function toggleCallCam() { document.getElementById('cam-btn').classList.toggle('bg-red-600'); }
-    function toggleScreenShare() { alert("Screen sharing initialized via WebRTC relay."); }
-
-    function toggleMobileSidebar() {
-      document.getElementById('channels-sidebar').classList.toggle('-translate-x-full');
-    }
+    function toggleMobileSidebar() { document.getElementById('channels-sidebar').classList.toggle('-translate-x-full'); }
+    
     function toggleSound() {
       isSoundEnabled = !isSoundEnabled;
       document.getElementById('sound-icon').className = isSoundEnabled ? "fa-solid fa-volume-high text-indigo-400" : "fa-solid fa-volume-xmark text-gray-500";
     }
+
     function playAudio() {
       if (!isSoundEnabled) return;
       try {
