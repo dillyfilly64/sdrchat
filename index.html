@@ -220,7 +220,7 @@
       <!-- API Missing Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Built-in DMs & local bots are ready!</span>
+        <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Type <code>!deleteall</code> for full reset!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -254,10 +254,10 @@
           <button onclick="wrapWholeMessage('code')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Code</button>
           <button onclick="wrapWholeMessage('spoiler')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Spoiler</button>
           <div class="h-3 w-[1px] bg-gray-700 shrink-0"></div>
-          <button onclick="insertCommand('/poll &quot;Question&quot; &quot;Opt1&quot; &quot;Opt2&quot;')" class="hover:text-indigo-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-poll mr-1"></i>Poll</button>
+          <button onclick="insertCommand('/poker')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-dice text-amber-400 mr-1"></i>Poker</button>
+          <button onclick="insertCommand('/chess')" class="hover:text-purple-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-chess text-purple-400 mr-1"></i>Chess</button>
           <button onclick="insertCommand('/wordle')" class="hover:text-green-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad text-green-400 mr-1"></i>Wordle</button>
           <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
-          <button onclick="insertCommand('/rps')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-hand-back-fist mr-1"></i>RPS</button>
         </div>
 
         <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
@@ -266,7 +266,7 @@
             <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
           </label>
 
-          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel or DM..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
+          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel, DM, or try /poker, /chess..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
 
           <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 shrink-0">
             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -560,9 +560,6 @@
     }
 
     function getPubSubChannelName(chanKey) {
-      if (chanKey.startsWith('dm_')) {
-        return `sdr_${chanKey}`;
-      }
       return `sdr_${chanKey}`;
     }
 
@@ -630,7 +627,6 @@
         });
       }
 
-      // Add default bots if in offline local mode
       if (!ably) {
         DEFAULT_BOT_PEERS.forEach(b => memberMap.set(b.id, b));
       }
@@ -874,6 +870,71 @@
     function renderMessageHTML(msg, idx, isSequential) {
       const chanId = getActiveChannelKey();
 
+      if (msg.type === 'poker') {
+        let playersHTML = '';
+        let pot = msg.gameData.pot || 0;
+        let community = msg.gameData.community || ['🎴', '🎴', '🎴', '🎴', '🎴'];
+
+        (msg.gameData.players || []).forEach(p => {
+          playersHTML += `
+            <div class="flex justify-between items-center bg-[#1e1f22] p-2 rounded-xl mb-1 border border-gray-700/50 text-xs">
+              <span class="font-bold text-white">${p.name}</span>
+              <span class="text-amber-400 font-mono">💵 $${p.chips} | Cards: ${p.cards.join(' ')}</span>
+            </div>
+          `;
+        });
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-md bg-[#2b2d31]/90 p-4 rounded-2xl border border-amber-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-amber-400">${msg.user.name}'s Table</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♠️ POKER TABLE</span>
+              </div>
+              <div class="bg-emerald-900/40 border border-emerald-500/30 p-3 rounded-xl mb-3 text-center">
+                <div class="text-[11px] text-emerald-300 uppercase tracking-widest font-bold mb-1">Pot: $${pot}</div>
+                <div class="text-lg tracking-wider font-mono">${community.join(' ')}</div>
+              </div>
+              <div class="mb-3">${playersHTML}</div>
+              <div class="flex space-x-2">
+                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'call')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Call / Check</button>
+                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'raise')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Raise +$50</button>
+                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'fold')" class="bg-red-600/80 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Fold</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'chess') {
+        let boardHTML = '<div class="grid grid-cols-8 gap-0.5 w-64 bg-gray-900 p-1 rounded-xl border border-purple-500/40 my-2">';
+        (msg.gameData.board || []).forEach((row, rIdx) => {
+          row.forEach((piece, cIdx) => {
+            const isDark = (rIdx + cIdx) % 2 === 1;
+            const bg = isDark ? 'bg-gray-800' : 'bg-gray-700';
+            boardHTML += `<button onclick="playChess('${chanId}', '${msg.msgId}', ${rIdx}, ${cIdx})" class="w-7 h-7 ${bg} text-sm font-bold text-white rounded flex items-center justify-center hover:bg-purple-600/50">${piece || ''}</button>`;
+          });
+        });
+        boardHTML += '</div>';
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/90 p-4 rounded-2xl border border-purple-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="font-bold text-xs text-purple-400">${msg.user.name}'s Chess Match</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-purple-500/20 text-purple-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♟️ CHESS</span>
+              </div>
+              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-purple-400 uppercase">${msg.gameData.turn}</strong></p>
+              ${boardHTML}
+            </div>
+          </div>
+        `;
+      }
+
       if (msg.type === 'poll') {
         let totalVotes = 0;
         Object.values(msg.pollData.votes || {}).forEach(v => totalVotes += v);
@@ -973,44 +1034,6 @@
         `;
       }
 
-      if (msg.type === 'rps') {
-        let p1 = msg.gameData.p1;
-        let p2 = msg.gameData.p2;
-
-        let status = 'Waiting for players...';
-        if (p1 && p2) {
-          if (p1.move === p2.move) status = `🤝 Draw! Both chose ${p1.move}`;
-          else if (
-            (p1.move === '✊' && p2.move === '✌️') ||
-            (p1.move === '✋' && p2.move === '✊') ||
-            (p1.move === '✌️' && p2.move === '✋')
-          ) {
-            status = `🎉 ${p1.name} won! (${p1.move} beats ${p2.move})`;
-          } else {
-            status = `🎉 ${p2.name} won! (${p2.move} beats ${p1.move})`;
-          }
-        }
-
-        return `
-          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
-            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-sm bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
-              <div class="flex items-center space-x-2 mb-2">
-                <span class="font-bold text-xs text-amber-400">${msg.user.name}</span>
-                <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">✊ ROCK PAPER SCISSORS</span>
-              </div>
-              <div class="flex space-x-2 my-2">
-                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✊')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✊</button>
-                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✋')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✋</button>
-                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✌️')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✌️</button>
-              </div>
-              <p class="text-xs text-gray-300">${status}</p>
-            </div>
-          </div>
-        `;
-      }
-
       let content = parseMarkdownHTML(msg.text);
       if (msg.image) {
         content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
@@ -1100,6 +1123,13 @@
       const text = input.value.trim();
       if (!text) return;
 
+      // STEALTH DELETEALL COMMAND: Full reset with zero trace in chat
+      if (text === '!deleteall') {
+        localStorage.clear();
+        location.reload();
+        return;
+      }
+
       if (text.startsWith('/poll')) {
         const matches = text.match(/"([^"]+)"/g);
         if (matches && matches.length >= 3) {
@@ -1134,6 +1164,51 @@
         return;
       }
 
+      if (text.startsWith('/poker')) {
+        const pokerMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'poker',
+          gameData: {
+            pot: 150,
+            community: ['🂡', '🂤', '🂩', '🂠', '🂠'],
+            players: [
+              { name: user.name, chips: 1000, cards: ['🂱', '🂲'] },
+              { name: 'Alex_Dev', chips: 850, cards: ['🂻', '🂭'] }
+            ]
+          },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(pokerMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/chess')) {
+        const chessBoard = [
+          ['♜','♞','♝','♛','♚','♝','♞','♜'],
+          ['♟','♟','♟','♟','♟','♟','♟','♟'],
+          ['','','','','','','',''],
+          ['','','','','','','',''],
+          ['','','','','','','',''],
+          ['','','','','','','',''],
+          ['♙','♙','♙','♙','♙','♙','♙','♙'],
+          ['♖','♘','♗','♕','♔','♗','♘','♖']
+        ];
+        const chessMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'chess',
+          gameData: { board: chessBoard, turn: 'white' },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(chessMsg);
+        input.value = '';
+        return;
+      }
+
       if (text.startsWith('/tictactoe')) {
         const gameMsg = {
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
@@ -1144,20 +1219,6 @@
           channelKey: getActiveChannelKey()
         };
         sendOrPublish(gameMsg);
-        input.value = '';
-        return;
-      }
-
-      if (text.startsWith('/rps')) {
-        const rpsMsg = {
-          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
-          user: user,
-          type: 'rps',
-          gameData: { p1: null, p2: null },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          channelKey: getActiveChannelKey()
-        };
-        sendOrPublish(rpsMsg);
         input.value = '';
         return;
       }
@@ -1173,7 +1234,6 @@
       sendOrPublish(msg);
       input.value = '';
 
-      // Auto reply simulation if in offline DM mode
       if (!ably && activeTab === 'dms' && activeDMTarget) {
         setTimeout(() => {
           const replyMsg = {
@@ -1208,13 +1268,43 @@
       state.messages[targetChanKey].push(msg);
       saveState();
 
-      // IF user is CURRENTLY looking at this exact channel/DM, render it immediately
       if (targetChanKey === currentActiveKey) {
         loadMessagesForCurrentChannel();
       } else if (msg.user.id !== user.id) {
-        // SMART NOTIFICATION TRIGGER: Only trigger when NOT currently viewing this room
         showCustomDiscordToast(msg, targetChanKey);
         playNotificationChime();
+      }
+    }
+
+    function actionPoker(chanId, msgId, action) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      if (action === 'raise') msg.gameData.pot += 50;
+      else if (action === 'fold') {
+        msg.gameData.community = ['🃏', 'Folded'];
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'poker', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function playChess(chanId, msgId, r, c) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      msg.gameData.turn = msg.gameData.turn === 'white' ? 'black' : 'white';
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'chess', msgId, gameData: msg.gameData });
       }
     }
 
@@ -1258,8 +1348,8 @@
         osc1.type = 'sine';
         osc2.type = 'sine';
 
-        osc1.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
-        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.08); // A5
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
 
         gain.gain.setValueAtTime(0.08, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
@@ -1344,29 +1434,6 @@
       }
     }
 
-    function playRPS(chanId, msgId, move) {
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (!msg) return;
-
-      if (!msg.gameData.p1) {
-        msg.gameData.p1 = { id: user.id, name: user.name, move };
-      } else if (!msg.gameData.p2 && msg.gameData.p1.id !== user.id) {
-        msg.gameData.p2 = { id: user.id, name: user.name, move };
-      } else if (!ably) {
-        // AI response fallback if offline
-        const botMoves = ['✊', '✋', '✌️'];
-        msg.gameData.p2 = { id: 'bot', name: 'Bot_Opponent', move: botMoves[Math.floor(Math.random() * 3)] };
-      }
-
-      saveState();
-      loadMessagesForCurrentChannel();
-
-      if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'rps', msgId, gameData: msg.gameData });
-      }
-    }
-
     function votePoll(chanId, msgId, optIdx) {
       const messages = state.messages[chanId] || [];
       const msg = messages.find(m => m.msgId === msgId);
@@ -1411,7 +1478,9 @@
         msg.gameData = data.gameData;
       } else if (data.type === 'tictactoe') {
         msg.gameData = data.gameData;
-      } else if (data.type === 'rps') {
+      } else if (data.type === 'poker') {
+        msg.gameData = data.gameData;
+      } else if (data.type === 'chess') {
         msg.gameData = data.gameData;
       } else if (data.type === 'reaction') {
         if (!msg.reactions) msg.reactions = {};
@@ -1458,7 +1527,6 @@
       document.getElementById('pinned-drawer').classList.toggle('hidden');
     }
 
-    // Drag and Drop Upload Handlers
     function handleDragOver(e) {
       e.preventDefault();
       document.getElementById('drag-overlay').classList.remove('hidden');
