@@ -1,57 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full theme-dark">
+<html lang="en" class="h-full bg-[#111214] text-gray-100 antialiased selection:bg-indigo-500 selection:text-white">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SDRChat - Ultimate Discord Clone</title>
-
-  <!-- Mobile & PWA Web App Capabilities -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SDRChat — Ultimate Discord Desktop & Mobile</title>
+  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SDRChat">
-
-  <!-- Tailwind CSS -->
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Marked.js for Markdown Processing -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
   <!-- Ably Realtime SDK -->
   <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'gg sans', 'Helvetica Neue', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
-          },
           colors: {
             discord: {
-              serverbar: 'var(--bg-serverbar)',
-              channels: 'var(--bg-channels)',
-              chat: 'var(--bg-chat)',
-              userbar: 'var(--bg-userbar)',
-              hover: 'var(--bg-hover)',
-              active: 'var(--bg-active)',
-              input: 'var(--bg-input)',
-              brand: 'var(--color-brand)',
-              brandHover: '#4752c4',
-              green: '#23a55a',
-              yellow: '#f0b232',
-              red: '#f23f43',
-              gray: '#80848e',
-              textMuted: 'var(--text-muted)',
-              textNormal: 'var(--text-normal)',
-              textHeader: 'var(--text-header)'
+              dark: '#111214',
+              server: '#1e1f22',
+              sidebar: '#2b2d31',
+              chat: '#313338',
+              input: '#383a40',
+              accent: '#5865f2'
             }
           }
         }
@@ -60,285 +37,169 @@
   </script>
 
   <style>
-    /* Global Color Tokens across Themes */
-    .theme-dark {
-      --bg-serverbar: #1e1f22;
-      --bg-channels: #2b2d31;
-      --bg-chat: #313338;
-      --bg-userbar: #232428;
-      --bg-hover: #35373c;
-      --bg-active: #404249;
-      --bg-input: #383a40;
-      --color-brand: #5865f2;
-      --text-muted: #949ba4;
-      --text-normal: #dbdee1;
-      --text-header: #f2f3f5;
-    }
-    .theme-oled {
-      --bg-serverbar: #000000;
-      --bg-channels: #08080a;
-      --bg-chat: #101012;
-      --bg-userbar: #000000;
-      --bg-hover: #1c1c20;
-      --bg-active: #282830;
-      --bg-input: #151518;
-      --color-brand: #5865f2;
-      --text-muted: #6b7280;
-      --text-normal: #e5e7eb;
-      --text-header: #ffffff;
-    }
-    .theme-cyberpunk {
-      --bg-serverbar: #0d0221;
-      --bg-channels: #0f0529;
-      --bg-chat: #150a33;
-      --bg-userbar: #0d0221;
-      --bg-hover: #261454;
-      --bg-active: #3a1c78;
-      --bg-input: #1f0e42;
-      --color-brand: #ff0055;
-      --text-muted: #8075a3;
-      --text-normal: #00f0ff;
-      --text-header: #ffe600;
-    }
-    .theme-vaporwave {
-      --bg-serverbar: #1a0b2e;
-      --bg-channels: #22123b;
-      --bg-chat: #2b1947;
-      --bg-userbar: #1a0b2e;
-      --bg-hover: #3c245c;
-      --bg-active: #4d2f73;
-      --bg-input: #321c52;
-      --color-brand: #ff71ce;
-      --text-muted: #b9a0d8;
-      --text-normal: #01cdfe;
-      --text-header: #05ffa1;
-    }
-    .theme-matrix {
-      --bg-serverbar: #020d04;
-      --bg-channels: #051408;
-      --bg-chat: #091a0d;
-      --bg-userbar: #020d04;
-      --bg-hover: #102d17;
-      --bg-active: #184222;
-      --bg-input: #0c2111;
-      --color-brand: #00ff41;
-      --text-muted: #33a047;
-      --text-normal: #00ff41;
-      --text-header: #66ff80;
-    }
-    .theme-light {
-      --bg-serverbar: #e3e5e8;
-      --bg-channels: #f2f3f5;
-      --bg-chat: #ffffff;
-      --bg-userbar: #ebedef;
-      --bg-hover: #e0e2e5;
-      --bg-active: #d4d7dc;
-      --bg-input: #ebedef;
-      --color-brand: #5865f2;
-      --text-muted: #5c5e66;
-      --text-normal: #313338;
-      --text-header: #060607;
-    }
+    body.theme-oled { --bg-dark: #000000; --bg-server: #0a0a0a; --bg-sidebar: #121212; --bg-chat: #181818; }
+    body.theme-cyberpunk { --bg-dark: #0d0221; --bg-server: #0f0529; --bg-sidebar: #1a083a; --bg-chat: #240c4f; }
+    body.theme-vaporwave { --bg-dark: #1a0933; --bg-server: #2b0e4a; --bg-sidebar: #3d1466; --bg-chat: #4e1a80; }
 
-    /* Custom Scrollbars */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-channels); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--bg-serverbar); border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: #2b2d31; }
+    ::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #111214; }
+    
+    .glass-panel {
+      background: rgba(30, 31, 34, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Custom Markdown Render Styles */
-    .discord-markdown code {
-      background-color: var(--bg-channels);
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-    }
-    .discord-markdown pre {
-      background-color: var(--bg-channels);
-      border: 1px solid var(--bg-serverbar);
-      padding: 0.75rem;
-      border-radius: 6px;
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
-      overflow-x: auto;
-      position: relative;
-    }
-    .discord-markdown blockquote {
-      border-left: 4px solid var(--color-brand);
-      padding-left: 0.75rem;
-      margin-top: 0.25rem;
-      margin-bottom: 0.25rem;
-      color: var(--text-muted);
-    }
-    .spoiler {
+    .spoiler-text {
       background-color: #202225;
       color: transparent;
-      border-radius: 3px;
+      border-radius: 4px;
       padding: 0 4px;
       cursor: pointer;
       user-select: none;
-      transition: all 0.15s ease;
+      transition: all 0.2s;
     }
-    .spoiler.revealed {
-      background-color: rgba(255,255,255,0.12);
+    .spoiler-text:hover, .spoiler-text.revealed {
+      background-color: rgba(255, 255, 255, 0.15);
       color: inherit;
     }
 
-    /* Speaking Pulse Indicator */
-    .speaking-ring {
-      box-shadow: 0 0 0 3px #23a55a;
-      animation: pulse-speaking 1.2s infinite;
+    @keyframes toastIn {
+      0% { transform: translateY(-100%) scale(0.9); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
     }
-    @keyframes pulse-speaking {
-      0% { box-shadow: 0 0 0 3px rgba(35, 165, 90, 0.9); }
-      50% { box-shadow: 0 0 0 7px rgba(35, 165, 90, 0.3); }
-      100% { box-shadow: 0 0 0 3px rgba(35, 165, 90, 0.9); }
-    }
-
-    /* Visualizer Bounce Effect */
-    .audio-bar {
-      animation: bounce 0.8s ease-in-out infinite alternate;
-    }
-    @keyframes bounce {
-      0% { height: 4px; }
-      100% { height: 24px; }
-    }
+    .toast-anim { animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   </style>
 </head>
-<body class="h-full bg-discord-chat text-discord-textNormal font-sans select-none overflow-hidden" id="app-body">
+<body id="app-body" class="h-full flex flex-col overflow-hidden bg-[#111214] font-sans text-gray-200 select-none">
 
-  <div id="app" class="flex h-full w-full overflow-hidden relative">
+  <!-- IN-APP DISCORD-STYLE TOAST CONTAINER -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
 
-    <!-- SERVER BAR (LEFTMOST) -->
-    <nav class="w-[72px] bg-discord-serverbar flex flex-col items-center py-3 gap-2 z-30 flex-shrink-0 border-r border-black/20">
-      
-      <!-- Direct Messages Home Button -->
-      <div class="relative group flex items-center justify-center w-full">
-        <div id="pill-dm" class="server-pill absolute left-0 w-1 rounded-r-full bg-white transition-all duration-200 h-0 group-hover:h-5"></div>
-        <button onclick="switchServer('dm')" class="w-12 h-12 rounded-[24px] group-hover:rounded-[16px] bg-discord-channels group-hover:bg-discord-brand flex items-center justify-center text-discord-textHeader transition-all duration-200 relative">
-          <i class="fa-solid fa-gamepad text-xl"></i>
-        </button>
-        <span class="absolute left-[84px] bg-black text-discord-textHeader text-xs font-bold px-3 py-1.5 rounded-md shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">Direct Messages</span>
+  <!-- TOP APP HEADER -->
+  <header id="app-header" class="h-12 border-b border-[#1f2023] bg-[#1e1f22] flex items-center justify-between px-3 md:px-4 shrink-0 z-30">
+    <div class="flex items-center space-x-2 md:space-x-3 min-w-0">
+      <button onclick="toggleMobileSidebar()" class="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-[#35373c] transition">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-600/30 shrink-0">
+        S
       </div>
-
-      <div class="w-8 h-[2px] bg-discord-channels rounded my-1"></div>
-
-      <!-- Dynamic Server List Container -->
-      <div id="server-list" class="flex-1 w-full space-y-2 overflow-y-auto no-scrollbar flex flex-col items-center"></div>
-
-      <!-- Quick Action Buttons -->
-      <div class="relative group flex items-center justify-center w-full">
-        <button onclick="openModal('create-server-modal')" class="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-discord-channels hover:bg-discord-green text-discord-green hover:text-white flex items-center justify-center transition-all duration-200">
-          <i class="fa-solid fa-plus text-lg"></i>
-        </button>
-        <span class="absolute left-[84px] bg-black text-discord-textHeader text-xs font-bold px-3 py-1.5 rounded-md shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">Add Server</span>
+      <div class="min-w-0">
+        <h1 class="font-bold text-white text-sm flex items-center gap-2 truncate">
+          <span id="header-title">#general</span>
+          <span id="connection-status" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 shrink-0">Ready</span>
+        </h1>
+        <p id="channel-subtitle" class="text-[11px] text-gray-400 truncate">SDR Central</p>
       </div>
+    </div>
 
-      <div class="relative group flex items-center justify-center w-full">
-        <button onclick="openModal('soundboard-modal')" class="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-discord-channels hover:bg-discord-yellow text-discord-yellow hover:text-white flex items-center justify-center transition-all duration-200">
-          <i class="fa-solid fa-music text-lg"></i>
-        </button>
-        <span class="absolute left-[84px] bg-black text-discord-textHeader text-xs font-bold px-3 py-1.5 rounded-md shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 whitespace-nowrap z-50">Soundboard FX</span>
+    <!-- Header Tools -->
+    <div class="flex items-center space-x-1 md:space-x-2 shrink-0">
+      <button onclick="toggleServerBarVisibility()" class="hidden md:flex p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Toggle Server Sidebar">
+        <i class="fa-solid fa-server text-sm"></i>
+      </button>
+
+      <button onclick="togglePinnedDrawer()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition relative" title="Pinned Messages">
+        <i class="fa-solid fa-thumbtack text-sm"></i>
+        <span id="pinned-count" class="hidden absolute -top-1 -right-1 bg-indigo-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+      </button>
+
+      <button onclick="openSoundboardModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Soundboard">
+        <i class="fa-solid fa-icons text-indigo-400 text-sm"></i>
+      </button>
+
+      <button onclick="openThemeModal()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Themes">
+        <i class="fa-solid fa-palette text-indigo-400 text-sm"></i>
+      </button>
+
+      <button onclick="toggleMemberSidebar()" class="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Toggle Member List">
+        <i class="fa-solid fa-users text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- 1. SERVERS SIDEBAR -->
+    <nav id="servers-bar" class="w-18 bg-[#1e1f22] border-r border-[#1f2023] flex flex-col items-center py-3 space-y-3 shrink-0 z-20 overflow-y-auto transition-all duration-200">
+      <button onclick="openCreateServerModal()" class="w-11 h-11 rounded-2xl bg-[#2b2d31] hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center transition-all duration-200 shadow-md" title="Add Server">
+        <i class="fa-solid fa-plus text-lg"></i>
+      </button>
+      <div class="w-8 h-[2px] bg-gray-800 rounded"></div>
+      <div id="servers-list-container" class="flex flex-col space-y-3 w-full items-center">
+        <!-- Injected Servers -->
       </div>
-
     </nav>
 
-    <!-- CHANNELS & DM SIDEBAR -->
-    <aside class="w-60 bg-discord-channels flex flex-col z-20 flex-shrink-0 border-r border-black/20">
+    <!-- 2. CHANNELS & DIRECT MESSAGES SIDEBAR -->
+    <aside id="channels-sidebar" class="w-60 bg-[#2b2d31] border-r border-[#1f2023] flex flex-col shrink-0 z-10 transition-transform duration-200 absolute md:relative inset-y-0 left-0 md:left-0 -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
       
-      <!-- Server Header Title -->
-      <div class="h-12 px-4 border-b border-black/30 flex items-center justify-between font-bold text-discord-textHeader shadow-sm cursor-pointer hover:bg-white/5 transition-colors">
-        <span id="active-server-name" class="truncate font-extrabold text-sm tracking-wide">SDR Central Hub</span>
-        <i class="fa-solid fa-chevron-down text-xs text-discord-textMuted"></i>
-      </div>
-
-      <!-- Search Filter Input -->
-      <div class="p-2 border-b border-black/20">
-        <div class="bg-discord-serverbar px-2.5 py-1.5 rounded-md flex items-center gap-2 text-xs">
-          <i class="fa-solid fa-magnifying-glass text-discord-textMuted"></i>
-          <input type="text" id="channel-search-input" oninput="filterChannels(this.value)" placeholder="Search channels & DMs..." class="bg-transparent text-discord-textNormal placeholder-discord-textMuted focus:outline-none w-full">
+      <!-- Server Header -->
+      <div class="p-3 font-bold text-xs uppercase tracking-wider text-gray-300 flex justify-between items-center border-b border-[#1f2023]">
+        <span id="current-server-title" class="truncate">SDR Central</span>
+        <div class="flex items-center space-x-1">
+          <button onclick="openCreateChannelModal()" id="add-channel-btn" class="text-gray-400 hover:text-white p-1 rounded" title="Create Channel">
+            <i class="fa-solid fa-plus text-xs"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Dynamic Content List Container (Channels or DMs) -->
-      <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4" id="channels-dm-scroll-area">
+      <!-- Navigation Tabs (Channels vs DMs) -->
+      <div class="flex border-b border-[#1f2023] bg-[#232428] text-xs font-semibold">
+        <button id="tab-channels-btn" onclick="switchSidebarTab('channels')" class="flex-1 py-2 text-white border-b-2 border-indigo-500 transition">Channels</button>
+        <button id="tab-dms-btn" onclick="switchSidebarTab('dms')" class="flex-1 py-2 text-gray-400 hover:text-white transition">Direct Msgs</button>
+      </div>
+
+      <!-- Channels List View -->
+      <div id="channels-view" class="flex-1 overflow-y-auto p-2 space-y-3">
+        <!-- Injected Channels -->
+      </div>
+
+      <!-- Direct Messages List View -->
+      <div id="dms-view" class="flex-1 overflow-y-auto p-2 space-y-1 hidden">
+        <!-- Injected Direct Messages -->
+      </div>
+
+      <!-- Active Voice Lounge Call Panel -->
+      <div id="voice-panel" class="hidden p-3 bg-[#111214] border-t border-emerald-500/30 flex flex-col space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span class="text-xs font-semibold text-emerald-400">Voice Connected</span>
+          </div>
+          <button onclick="leaveVoiceCall()" class="text-red-400 hover:text-red-300 text-xs font-bold">Disconnect</button>
+        </div>
+        <button onclick="openVideoCallModal()" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 text-xs font-bold py-1.5 rounded-lg transition">
+          <i class="fa-solid fa-video mr-1"></i> Expand Call Room
+        </button>
+      </div>
+
+      <!-- 📌 BOTTOM-LEFT USER PROFILE BAR -->
+      <div class="h-14 bg-[#232428] border-t border-[#1f2023] px-2 flex items-center justify-between shrink-0">
+        <button onclick="openProfileModal()" class="flex items-center space-x-2 p-1 hover:bg-[#35373c] rounded-lg transition max-w-[130px] overflow-hidden">
+          <div class="relative shrink-0">
+            <img id="user-avatar-bottom" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-8 h-8 rounded-full bg-gray-900 border border-gray-700">
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#232428]"></span>
+          </div>
+          <div class="text-left leading-tight truncate">
+            <div id="user-name-bottom" class="text-xs font-bold text-white truncate">Anonymous</div>
+            <div class="text-[10px] text-gray-400">#Online</div>
+          </div>
+        </button>
         
-        <!-- Text Channels Section -->
-        <div id="text-channels-section">
-          <div class="flex items-center justify-between px-1 mb-1 text-xs font-bold text-discord-textMuted hover:text-discord-textHeader uppercase tracking-wider cursor-pointer group" onclick="toggleCategory('text-channels-container')">
-            <div class="flex items-center gap-1">
-              <i class="fa-solid fa-chevron-down text-[10px] transition-transform" id="arrow-text"></i>
-              <span>Text Channels</span>
-            </div>
-            <i class="fa-solid fa-plus hover:text-white opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); openModal('create-channel-modal')"></i>
-          </div>
-          <div id="text-channels-container" class="space-y-[2px]"></div>
-        </div>
-
-        <!-- Voice Channels Section -->
-        <div id="voice-channels-section">
-          <div class="flex items-center justify-between px-1 mb-1 text-xs font-bold text-discord-textMuted hover:text-discord-textHeader uppercase tracking-wider cursor-pointer group" onclick="toggleCategory('voice-channels-container')">
-            <div class="flex items-center gap-1">
-              <i class="fa-solid fa-chevron-down text-[10px] transition-transform" id="arrow-voice"></i>
-              <span>Voice Channels</span>
-            </div>
-            <i class="fa-solid fa-plus hover:text-white opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation(); openModal('create-channel-modal')"></i>
-          </div>
-          <div id="voice-channels-container" class="space-y-[2px]"></div>
-        </div>
-
-        <!-- Direct Messages Navigation List (Active in DM view) -->
-        <div id="dm-list-section" class="hidden space-y-[2px]">
-          <div class="px-1 mb-2 text-xs font-bold text-discord-textMuted uppercase tracking-wider">Direct Messages</div>
-          <div id="dm-chats-container" class="space-y-[2px]"></div>
-        </div>
-
-      </div>
-
-      <!-- Voice Active Connected Bar -->
-      <div id="voice-active-bar" class="hidden bg-[#1a3a2a] border-t border-b border-discord-green/30 px-3 py-2 flex items-center justify-between">
-        <div class="flex items-center gap-2 truncate cursor-pointer" onclick="toggleVoiceGridFullscreen()">
-          <i class="fa-solid fa-wifi text-discord-green animate-pulse text-xs"></i>
-          <div class="truncate">
-            <p class="text-xs font-bold text-discord-green leading-tight">RTC Connected</p>
-            <p id="voice-active-room-name" class="text-[10px] text-discord-textMuted truncate">Voice Lounge</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-1">
-          <button onclick="toggleVoiceGridFullscreen()" class="p-1 hover:bg-discord-hover rounded text-discord-textNormal" title="Expand Grid">
-            <i class="fa-solid fa-expand text-xs"></i>
-          </button>
-          <button onclick="leaveVoiceChannel()" class="p-1 hover:bg-discord-red/20 rounded text-discord-red" title="Disconnect">
-            <i class="fa-solid fa-phone-slash text-xs"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Bottom User Profile Controls -->
-      <div class="h-14 bg-discord-userbar px-2 flex items-center justify-between border-t border-black/20">
-        <div onclick="openModal('profile-modal')" class="flex items-center gap-2 p-1 rounded-md hover:bg-discord-hover cursor-pointer flex-1 min-w-0 mr-1" title="Edit Profile & Audio Settings">
-          <div class="relative flex-shrink-0">
-            <img id="user-bar-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=User" class="w-8 h-8 rounded-full bg-discord-chat object-cover">
-            <span id="user-bar-status-dot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-discord-green border-2 border-discord-userbar rounded-full"></span>
-          </div>
-          <div class="truncate leading-tight">
-            <p id="user-bar-name" class="text-xs font-bold text-discord-textHeader truncate">AnonymousUser</p>
-            <p id="user-bar-status-text" class="text-[10px] text-discord-textMuted truncate">Online</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-0.5 text-discord-gray">
-          <button onclick="toggleMute()" id="btn-mute" class="p-1.5 hover:text-discord-textHeader hover:bg-discord-hover rounded transition-colors" title="Mute Microphone">
+        <div class="flex items-center space-x-0.5 text-gray-400">
+          <button onclick="toggleMuteMic(this)" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="Mute Mic">
             <i class="fa-solid fa-microphone text-xs"></i>
           </button>
-          <button onclick="toggleDeafen()" id="btn-deafen" class="p-1.5 hover:text-discord-textHeader hover:bg-discord-hover rounded transition-colors" title="Deafen Audio">
+          <button onclick="toggleDeafen(this)" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="Deafen Audio">
             <i class="fa-solid fa-headphones text-xs"></i>
           </button>
-          <button onclick="openModal('settings-modal')" class="p-1.5 hover:text-discord-textHeader hover:bg-discord-hover rounded transition-colors" title="Settings & Hardware">
+          <button onclick="openProfileModal()" class="p-1.5 hover:text-white hover:bg-[#35373c] rounded transition" title="User Settings">
             <i class="fa-solid fa-gear text-xs"></i>
           </button>
         </div>
@@ -346,1521 +207,1492 @@
 
     </aside>
 
-    <!-- MAIN CHAT & CALL AREA -->
-    <main class="flex-1 flex flex-col min-w-0 bg-discord-chat relative">
+    <!-- 3. MAIN CHAT AREA -->
+    <main id="chat-drop-zone" class="flex-1 flex flex-col bg-[#313338] relative min-w-0" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)">
       
-      <!-- Top Channel / DM Header -->
-      <header class="h-12 border-b border-black/30 px-4 flex items-center justify-between bg-discord-chat z-10 shadow-sm">
-        <div class="flex items-center gap-2 min-w-0">
-          <i id="channel-header-icon" class="fa-solid fa-hashtag text-discord-gray"></i>
-          <span id="active-channel-title" class="font-bold text-discord-textHeader text-base truncate">general</span>
-          <div class="hidden sm:block h-4 w-[1px] bg-discord-gray/30 mx-2"></div>
-          <p id="channel-topic" class="hidden sm:block text-xs text-discord-textMuted truncate">General channel discussion.</p>
+      <!-- DRAG AND DROP OVERLAY -->
+      <div id="drag-overlay" class="hidden absolute inset-0 bg-indigo-600/90 backdrop-blur-sm z-40 flex flex-col items-center justify-center border-4 border-dashed border-white pointer-events-none">
+        <i class="fa-solid fa-cloud-arrow-up text-6xl text-white mb-4 animate-bounce"></i>
+        <h3 class="text-2xl font-bold text-white">Upload File or Video</h3>
+        <p class="text-sm text-indigo-100 mt-1">Drop image or video anywhere to send into chat</p>
+      </div>
+
+      <!-- API Missing Warning Banner -->
+      <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Built-in DMs & local bots are ready!</span>
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-1">
+        <!-- Injected Messages -->
+      </div>
+
+      <!-- PINNED MESSAGES DRAWER -->
+      <div id="pinned-drawer" class="hidden absolute top-0 right-0 w-80 bg-[#2b2d31] border-l border-b border-gray-700/80 shadow-2xl z-20 max-h-96 overflow-y-auto p-3">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2 mb-2">
+          <span class="text-xs font-bold text-white uppercase"><i class="fa-solid fa-thumbtack text-indigo-400 mr-1"></i> Pinned Messages</span>
+          <button onclick="togglePinnedDrawer()" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
-        <div class="flex items-center gap-3 text-discord-gray">
-          <!-- Live Realtime Status Indicator -->
-          <div id="ably-status-badge" class="hidden sm:flex items-center gap-1.5 bg-discord-serverbar px-2.5 py-1 rounded-full border border-black/30 text-[10px] font-bold text-discord-green">
-            <span class="w-2 h-2 rounded-full bg-discord-green animate-pulse"></span>
-            <span id="ably-status-text">Ably Connected</span>
-          </div>
-
-          <button onclick="openModal('search-chat-modal')" class="hover:text-discord-textHeader" title="Search Message History">
-            <i class="fa-solid fa-magnifying-glass text-sm"></i>
-          </button>
-
-          <button onclick="openModal('pinned-modal')" class="hover:text-discord-textHeader" title="Pinned Messages">
-            <i class="fa-solid fa-thumbtack text-sm"></i>
-          </button>
-
-          <button onclick="toggleMemberList()" class="hover:text-discord-textHeader" title="Toggle Members Sidebar">
-            <i class="fa-solid fa-users text-sm"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- VIEW A: TEXT CHAT INTERFACE -->
-      <div id="text-chat-view" class="flex-1 flex flex-col min-h-0 relative">
-        <div id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-4">
-          <!-- Welcome Banner -->
-          <div class="my-6" id="channel-welcome-banner">
-            <div class="w-16 h-16 rounded-full bg-discord-hover flex items-center justify-center text-discord-textHeader mb-3">
-              <i class="fa-solid fa-hashtag text-3xl" id="welcome-icon"></i>
-            </div>
-            <h1 id="welcome-title" class="text-3xl font-extrabold text-discord-textHeader">Welcome to #general!</h1>
-            <p id="welcome-desc" class="text-sm text-discord-textMuted mt-1">This is the start of the channel history.</p>
-          </div>
-
-          <!-- Live Messages Container -->
-          <div id="live-messages-container" class="space-y-4"></div>
-        </div>
-
-        <!-- Typing Indicator Area -->
-        <div id="typing-indicator" class="px-4 text-[11px] text-discord-textMuted h-4 font-medium flex items-center gap-1 opacity-0 transition-opacity">
-          <span id="typing-user-name" class="font-bold">Someone</span> is typing...
-        </div>
-
-        <!-- Input Bar & Interactive Formatting Toolbar -->
-        <div class="px-4 pb-4 pt-1">
-          
-          <div class="flex items-center gap-1 mb-1.5 px-2 text-xs text-discord-textMuted">
-            <button onclick="insertFormatting('**', '**')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels font-bold">B</button>
-            <button onclick="insertFormatting('*', '*')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels italic">I</button>
-            <button onclick="insertFormatting('~', '~')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels line-through">S</button>
-            <button onclick="insertFormatting('`', '`')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels font-mono">code</button>
-            <button onclick="insertFormatting('```\n', '\n```')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels font-mono">block</button>
-            <button onclick="insertFormatting('||', '||')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels">spoiler</button>
-            <button onclick="insertFormatting('> ', '')" class="hover:text-white px-1.5 py-0.5 rounded bg-discord-channels">quote</button>
-          </div>
-
-          <!-- Slash Commands Menu -->
-          <div id="slash-menu" class="hidden mb-2 bg-discord-channels border border-black/40 rounded-lg shadow-2xl p-2 max-h-48 overflow-y-auto">
-            <div class="text-[11px] font-bold text-discord-textMuted px-2 py-1 uppercase tracking-wider">Available Slash Commands & Mini-Games</div>
-            <div onclick="executeSlashCommand('/wordle')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/wordle</span> <span class="text-discord-textMuted hover:text-white">- Play Wordle word guessing game</span>
-            </div>
-            <div onclick="executeSlashCommand('/rps')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/rps</span> <span class="text-discord-textMuted hover:text-white">- Play Rock Paper Scissors vs Peer/AI</span>
-            </div>
-            <div onclick="executeSlashCommand('/tictactoe')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/tictactoe</span> <span class="text-discord-textMuted hover:text-white">- Play Tic-Tac-Toe vs Peer/AI</span>
-            </div>
-            <div onclick="executeSlashCommand('/poll')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/poll "Question" "Opt1" "Opt2"</span> <span class="text-discord-textMuted hover:text-white">- Create interactive live poll</span>
-            </div>
-            <div onclick="executeSlashCommand('/roll')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/roll</span> <span class="text-discord-textMuted hover:text-white">- Roll a d20 die</span>
-            </div>
-            <div onclick="executeSlashCommand('/shrug')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/shrug</span> <span class="text-discord-textMuted hover:text-white">- Send ¯\_(ツ)_/¯</span>
-            </div>
-            <div onclick="executeSlashCommand('/clear')" class="flex items-center gap-2 p-2 hover:bg-discord-brand hover:text-white rounded cursor-pointer text-xs text-discord-textNormal">
-              <span class="font-bold">/clear</span> <span class="text-discord-textMuted hover:text-white">- Clear current chat view</span>
-            </div>
-          </div>
-
-          <!-- Main Input Field -->
-          <div class="bg-discord-input rounded-lg p-2.5 flex items-center gap-3" id="drop-zone">
-            
-            <button onclick="triggerImageUpload()" class="bg-discord-gray/20 hover:bg-discord-gray/40 text-discord-textNormal p-1.5 rounded-full transition-colors" title="Upload Attachment">
-              <i class="fa-solid fa-plus text-xs"></i>
-            </button>
-            <input type="file" id="file-input" accept="image/*,video/*,image/gif" class="hidden" onchange="handleFileSelected(event)">
-
-            <textarea id="chat-textarea" rows="1" oninput="handleTypingInput(this)" onkeydown="handleKeyDown(event)" placeholder="Message channel" class="w-full bg-transparent text-sm text-discord-textNormal placeholder-discord-textMuted resize-none focus:outline-none max-h-36 overflow-y-auto font-sans"></textarea>
-
-            <div class="flex items-center gap-2 text-discord-gray">
-              <button onclick="openModal('gif-modal')" class="hover:text-discord-textHeader font-bold text-xs bg-discord-hover px-2 py-1 rounded">GIF</button>
-              <button onclick="toggleEmojiPicker()" class="hover:text-discord-textHeader">
-                <i class="fa-solid fa-face-smile text-base"></i>
-              </button>
-              <button onclick="sendChatMessage()" class="bg-discord-brand hover:bg-discord-brandHover text-white p-1.5 rounded-md transition-colors">
-                <i class="fa-solid fa-paper-plane text-xs"></i>
-              </button>
-            </div>
-
-            <!-- Custom Emoji & Sticker Popover Panel -->
-            <div id="emoji-tray" class="hidden absolute bottom-20 right-8 bg-discord-channels border border-black/40 p-3 rounded-lg shadow-2xl grid grid-cols-6 gap-2 z-50">
-              <span onclick="appendEmoji('🔥')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🔥</span>
-              <span onclick="appendEmoji('🚀')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🚀</span>
-              <span onclick="appendEmoji('🎉')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🎉</span>
-              <span onclick="appendEmoji('👍')" class="cursor-pointer hover:scale-125 transition-transform text-xl">👍</span>
-              <span onclick="appendEmoji('❤️')" class="cursor-pointer hover:scale-125 transition-transform text-xl">❤️</span>
-              <span onclick="appendEmoji('😂')" class="cursor-pointer hover:scale-125 transition-transform text-xl">😂</span>
-              <span onclick="appendEmoji('🎮')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🎮</span>
-              <span onclick="appendEmoji('🎧')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🎧</span>
-              <span onclick="appendEmoji('🤖')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🤖</span>
-              <span onclick="appendEmoji('⭐')" class="cursor-pointer hover:scale-125 transition-transform text-xl">⭐</span>
-              <span onclick="appendEmoji('✨')" class="cursor-pointer hover:scale-125 transition-transform text-xl">✨</span>
-              <span onclick="appendEmoji('💡')" class="cursor-pointer hover:scale-125 transition-transform text-xl">💡</span>
-            </div>
-
-          </div>
+        <div id="pinned-messages-list" class="space-y-2">
+          <!-- Injected Pinned Msgs -->
         </div>
       </div>
 
-      <!-- VIEW B: VOICE & SCREEN SHARE CALL UI -->
-      <div id="voice-grid-view" class="hidden absolute inset-0 bg-[#111214] z-20 flex flex-col">
-        <div class="p-4 flex items-center justify-between border-b border-black/40">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-volume-high text-discord-green"></i>
-            <span id="call-room-title" class="font-bold text-discord-textHeader">Voice Lounge / SDR Central Hub</span>
-            <span class="bg-discord-green/20 text-discord-green text-xs font-bold px-2 py-0.5 rounded">RTC Connected</span>
-            <span class="text-xs text-discord-textMuted ml-2" id="call-ping">Ping: 18ms</span>
-          </div>
-          <button onclick="toggleVoiceGridFullscreen()" class="text-discord-gray hover:text-white p-2">
-            <i class="fa-solid fa-compress"></i>
-          </button>
-        </div>
-
-        <!-- Animated Sound Visualizer Stream Indicator -->
-        <div class="bg-discord-serverbar py-2 px-6 flex items-center justify-center gap-1.5 border-b border-black/30">
-          <span class="text-xs font-bold text-discord-textMuted mr-2">Audio Stream:</span>
-          <div class="w-1 bg-discord-green audio-bar rounded-full" style="animation-delay: 0.1s"></div>
-          <div class="w-1 bg-discord-green audio-bar rounded-full" style="animation-delay: 0.3s"></div>
-          <div class="w-1 bg-discord-green audio-bar rounded-full" style="animation-delay: 0.2s"></div>
-          <div class="w-1 bg-discord-green audio-bar rounded-full" style="animation-delay: 0.4s"></div>
-          <div class="w-1 bg-discord-green audio-bar rounded-full" style="animation-delay: 0.15s"></div>
-        </div>
-
-        <!-- Video & Screen Feed Grid Area -->
-        <div class="flex-1 p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-center justify-center overflow-y-auto" id="voice-participants-grid">
-          
-          <!-- Local User Feed -->
-          <div class="bg-discord-channels rounded-2xl border border-black/40 p-6 flex flex-col items-center justify-center relative h-64 overflow-hidden group">
-            <video id="webcam-video-element" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" autoplay playsinline muted></video>
-            <video id="screen-video-element" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" autoplay playsinline muted></video>
-            
-            <div id="local-avatar-container" class="relative mb-3">
-              <img id="call-local-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Discord" class="w-24 h-24 rounded-full bg-discord-serverbar object-cover speaking-ring transition-all">
-            </div>
-            <p id="call-local-name" class="font-bold text-discord-textHeader z-10">You</p>
-            <p class="text-xs text-discord-textMuted z-10" id="local-call-status">Voice Active</p>
-          </div>
-
-          <!-- Peer Participant 1 -->
-          <div class="bg-discord-channels rounded-2xl border border-black/40 p-6 flex flex-col items-center justify-center relative h-64 overflow-hidden">
-            <div class="relative mb-3">
-              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=CyberBot" class="w-24 h-24 rounded-full bg-discord-serverbar object-cover">
-            </div>
-            <p class="font-bold text-discord-textHeader">CyberBot</p>
-            <p class="text-xs text-discord-textMuted">Connected</p>
-          </div>
-
-        </div>
-
-        <!-- Call Action Toolbar -->
-        <div class="p-6 bg-discord-serverbar flex items-center justify-center gap-4 border-t border-black/40">
-          <button onclick="toggleCamera()" id="btn-call-cam" class="w-12 h-12 rounded-full bg-discord-channels hover:bg-discord-hover flex items-center justify-center text-discord-textHeader transition-all" title="Toggle Webcam">
-            <i class="fa-solid fa-video text-base"></i>
-          </button>
-          <button onclick="toggleScreenShare()" id="btn-call-screen" class="w-12 h-12 rounded-full bg-discord-channels hover:bg-discord-hover flex items-center justify-center text-discord-textHeader transition-all" title="Share Screen">
-            <i class="fa-solid fa-desktop text-base"></i>
-          </button>
-          <button onclick="toggleMute()" id="btn-call-mute" class="w-12 h-12 rounded-full bg-discord-channels hover:bg-discord-hover flex items-center justify-center text-discord-textHeader transition-all" title="Mute Mic">
-            <i class="fa-solid fa-microphone text-base"></i>
-          </button>
-          <button onclick="leaveVoiceChannel()" class="w-14 h-12 rounded-2xl bg-discord-red hover:bg-red-600 flex items-center justify-center text-white transition-all shadow-lg" title="Disconnect Call">
-            <i class="fa-solid fa-phone-slash text-lg"></i>
-          </button>
-        </div>
+      <!-- Typing Indicator Bar -->
+      <div id="typing-indicator" class="px-4 py-1 text-xs text-gray-400 italic bg-[#313338] h-6 flex items-center hidden">
+        <span>Someone is typing...</span>
       </div>
 
+      <!-- Form Formatting Toolbar & Chat Input -->
+      <div class="p-3 bg-[#313338] border-t border-[#222327]">
+        <!-- Wrap Whole Message Mode Buttons -->
+        <div class="flex items-center space-x-2 mb-2 text-xs text-gray-400 overflow-x-auto pb-1">
+          <span class="text-[10px] uppercase font-bold text-gray-500 shrink-0">Wrap Msg:</span>
+          <button onclick="wrapWholeMessage('bold')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Bold</button>
+          <button onclick="wrapWholeMessage('italic')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Italic</button>
+          <button onclick="wrapWholeMessage('code')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Code</button>
+          <button onclick="wrapWholeMessage('spoiler')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Spoiler</button>
+          <div class="h-3 w-[1px] bg-gray-700 shrink-0"></div>
+          <button onclick="insertCommand('/poll &quot;Question&quot; &quot;Opt1&quot; &quot;Opt2&quot;')" class="hover:text-indigo-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-poll mr-1"></i>Poll</button>
+          <button onclick="insertCommand('/wordle')" class="hover:text-green-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad text-green-400 mr-1"></i>Wordle</button>
+          <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
+          <button onclick="insertCommand('/rps')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-hand-back-fist mr-1"></i>RPS</button>
+        </div>
+
+        <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
+          <label class="text-gray-400 hover:text-white cursor-pointer text-lg transition" title="Attach Image or Video File">
+            <i class="fa-solid fa-circle-plus"></i>
+            <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
+          </label>
+
+          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel or DM..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
+
+          <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 shrink-0">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </form>
+      </div>
     </main>
 
-    <!-- RIGHT ONLINE PEERS & MEMBERS SIDEBAR -->
-    <aside id="member-sidebar" class="w-60 bg-discord-channels flex flex-col p-4 border-l border-black/20 overflow-y-auto hidden lg:flex flex-shrink-0">
-      <div class="mb-4">
-        <h3 class="text-xs font-bold text-discord-textMuted uppercase tracking-wider mb-2">
-          Online Peers — <span id="online-count">1</span>
-        </h3>
-        <!-- Live Deduplicated Online Member List -->
-        <div id="active-peers-list" class="space-y-1"></div>
+    <!-- 4. ONLINE MEMBERS SIDEBAR -->
+    <aside id="member-sidebar" class="w-56 bg-[#2b2d31] border-l border-[#1f2023] p-3 hidden lg:block shrink-0 overflow-y-auto">
+      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Online Peers — <span id="member-count">1</span></h3>
+      <div id="member-list" class="space-y-2">
+        <!-- Injected Active Members -->
       </div>
     </aside>
 
   </div>
 
-  <!-- MODAL 1: EDIT PROFILE & RICH STATUS -->
-  <div id="profile-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-md rounded-xl overflow-hidden shadow-2xl">
-      <div id="profile-banner-preview" class="h-24 bg-discord-brand relative">
-        <button onclick="closeModal('profile-modal')" class="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
+  <!-- CALL OVERLAY GRID MODAL WITH SCREEN SHARE & HARDWARE SELECTORS -->
+  <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
+    <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-video text-emerald-400"></i>
+        <span class="font-bold text-white">Voice & Video Lounge</span>
       </div>
-      <div class="px-6 pb-6 relative">
-        <div class="-mt-10 mb-3 relative inline-block">
-          <img id="profile-modal-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=User" class="w-20 h-20 rounded-full border-4 border-discord-channels bg-discord-serverbar object-cover">
+      <button onclick="closeVideoCallModal()" class="text-gray-400 hover:text-white text-sm bg-gray-800 px-3 py-1.5 rounded-lg">Minimize</button>
+    </div>
+    
+    <div class="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto max-w-5xl mx-auto w-full items-center">
+      <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
+        <video id="local-video" autoplay muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
+        <div id="local-video-placeholder" class="flex flex-col items-center justify-center">
+          <img id="call-avatar-main" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-24 h-24 rounded-full border-4 border-emerald-500 mb-3 bg-gray-900">
+          <span id="call-name-main" class="font-bold text-white text-lg">You</span>
+          <span class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-microphone mr-1"></i> Active Speaker</span>
         </div>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Display Name</label>
-            <input type="text" id="input-display-name" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none focus:border-discord-brand">
+      </div>
+      <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
+        <video id="screen-share-video" autoplay muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
+        <div id="screen-share-placeholder" class="flex flex-col items-center justify-center">
+          <div class="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 text-2xl mb-2">
+            <i class="fa-solid fa-desktop"></i>
           </div>
-          <div>
-            <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Custom Status Message</label>
-            <input type="text" id="input-status-message" placeholder="🎮 Playing Wordle..." class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none focus:border-discord-brand">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Online Presence Status</label>
-            <select id="select-user-status" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
-              <option value="online">Online</option>
-              <option value="idle">Idle</option>
-              <option value="dnd">Do Not Disturb</option>
-              <option value="invisible">Invisible</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Avatar Image URL</label>
-            <input type="text" id="input-avatar-url" placeholder="https://..." class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none focus:border-discord-brand">
-          </div>
-        </div>
-        <div class="mt-6 flex justify-end gap-2">
-          <button onclick="saveProfile()" class="bg-discord-brand hover:bg-discord-brandHover text-white font-bold px-5 py-2 rounded text-xs transition-colors">Save Changes</button>
+          <span class="font-bold text-gray-400 text-sm">Screen Share / Peer Video</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL 2: HARDWARE SELECTION & APP SETTINGS -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-lg rounded-xl p-6 shadow-2xl space-y-5">
-      <div class="flex justify-between items-center border-b border-black/30 pb-3">
-        <h2 class="text-xl font-bold text-discord-textHeader"><i class="fa-solid fa-sliders text-discord-brand mr-2"></i> Voice & Hardware Settings</h2>
-        <button onclick="closeModal('settings-modal')" class="text-discord-gray hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <!-- Microphone Input Selector -->
-      <div class="space-y-2">
-        <label class="text-xs font-bold text-discord-textMuted uppercase block">Input Device (Microphone)</label>
-        <div class="flex gap-2">
-          <select id="select-mic-device" class="flex-1 bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
+    <!-- Call Controls & Hardware Selectors -->
+    <div class="p-4 bg-[#1e1f22] border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+      <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+        <div class="flex items-center space-x-2 w-full md:w-auto">
+          <i class="fa-solid fa-microphone text-gray-400 text-xs"></i>
+          <select id="mic-select" onchange="changeAudioInput()" class="bg-[#111214] text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none w-full md:w-48">
             <option value="">Default Microphone</option>
           </select>
-          <button onclick="refreshHardwareDevices()" class="bg-discord-serverbar hover:bg-discord-hover text-discord-textHeader px-3 py-2 rounded text-xs font-bold border border-black/30" title="Scan Audio Devices">
-            <i class="fa-solid fa-arrows-rotate"></i>
-          </button>
+        </div>
+
+        <div class="flex items-center space-x-2 w-full md:w-auto">
+          <i class="fa-solid fa-headphones text-gray-400 text-xs"></i>
+          <select id="speaker-select" onchange="changeAudioOutput()" class="bg-[#111214] text-xs text-gray-200 border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none w-full md:w-48">
+            <option value="">Default Output/Headphones</option>
+          </select>
         </div>
       </div>
 
-      <!-- Speaker / Headphone Output Selector -->
-      <div class="space-y-2">
-        <label class="text-xs font-bold text-discord-textMuted uppercase block">Output Device (Headphones / Speakers)</label>
-        <select id="select-speaker-device" onchange="changeAudioSink(this.value)" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
-          <option value="">Default Output Speaker</option>
-        </select>
-        <p class="text-[11px] text-discord-textMuted">Audio routing sink selection uses modern navigator setSinkId browser capabilities where available.</p>
-      </div>
-
-      <!-- Themes Selector -->
-      <div class="space-y-2 border-t border-black/30 pt-4">
-        <label class="text-xs font-bold text-discord-textMuted uppercase block mb-2">Select Visual Theme</label>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <button onclick="setAppTheme('dark')" class="p-2.5 rounded-lg bg-discord-serverbar border border-transparent hover:border-discord-brand text-left">
-            <p class="font-bold text-xs text-white">Discord Dark</p>
-          </button>
-          <button onclick="setAppTheme('oled')" class="p-2.5 rounded-lg bg-black border border-zinc-800 hover:border-discord-brand text-left">
-            <p class="font-bold text-xs text-white">OLED Black</p>
-          </button>
-          <button onclick="setAppTheme('cyberpunk')" class="p-2.5 rounded-lg bg-[#0d0221] border border-pink-500/30 hover:border-pink-500 text-left">
-            <p class="font-bold text-xs text-yellow-400">Cyberpunk</p>
-          </button>
-          <button onclick="setAppTheme('vaporwave')" class="p-2.5 rounded-lg bg-[#1a0b2e] border border-cyan-500/30 hover:border-cyan-500 text-left">
-            <p class="font-bold text-xs text-pink-400">Vaporwave</p>
-          </button>
-          <button onclick="setAppTheme('matrix')" class="p-2.5 rounded-lg bg-[#020d04] border border-green-500/30 hover:border-green-500 text-left">
-            <p class="font-bold text-xs text-green-400">Matrix Code</p>
-          </button>
-          <button onclick="setAppTheme('light')" class="p-2.5 rounded-lg bg-gray-200 border border-gray-300 hover:border-discord-brand text-left">
-            <p class="font-bold text-xs text-gray-900">Light Mode</p>
-          </button>
-        </div>
-      </div>
-
-      <div class="mt-4 flex justify-end">
-        <button onclick="closeModal('settings-modal')" class="bg-discord-brand text-white font-bold px-4 py-2 rounded text-xs">Done</button>
+      <div class="flex items-center space-x-4">
+        <button onclick="toggleCallMic()" id="mic-btn" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition" title="Toggle Mic"><i class="fa-solid fa-microphone"></i></button>
+        <button onclick="toggleCallCam()" id="cam-btn" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition" title="Toggle Camera"><i class="fa-solid fa-video"></i></button>
+        <button onclick="toggleScreenShare()" id="screen-btn" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg transition" title="Share Screen"><i class="fa-solid fa-desktop"></i></button>
+        <button onclick="leaveVoiceCall(); closeVideoCallModal();" class="w-14 h-12 rounded-2xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center text-lg transition" title="Leave Call"><i class="fa-solid fa-phone-slash"></i></button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: SEARCH CHAT HISTORY -->
-  <div id="search-chat-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-lg rounded-xl p-4 shadow-2xl flex flex-col h-[450px]">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="font-bold text-discord-textHeader text-sm">Search Current History</h3>
-        <button onclick="closeModal('search-chat-modal')" class="text-discord-gray hover:text-white">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <input type="text" id="chat-search-filter" oninput="performSearchInHistory(this.value)" placeholder="Search for messages..." class="w-full bg-discord-serverbar p-2.5 rounded-lg text-sm text-discord-textHeader mb-3 border border-black/30 focus:outline-none">
-      <div id="search-results-list" class="flex-1 overflow-y-auto space-y-2">
-        <p class="text-xs text-discord-textMuted text-center my-8">Type above to search messages in active view...</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 4: SOUNDBOARD FX -->
-  <div id="soundboard-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-md rounded-xl p-6 shadow-2xl">
+  <!-- SOUNDBOARD MODAL -->
+  <div id="soundboard-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-bold text-discord-textHeader">Live Web Audio Soundboard</h2>
-        <button onclick="closeModal('soundboard-modal')" class="text-discord-gray hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-icons text-indigo-400"></i> Soundboard FX
+        </h3>
+        <button onclick="closeSoundboardModal()" class="text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="playSoundFX('airhorn')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-discord-yellow border border-black/20">🎺 Airhorn</button>
-        <button onclick="playSoundFX('quack')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-discord-green border border-black/20">🦆 Quack</button>
-        <button onclick="playSoundFX('levelup')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-discord-brand border border-black/20">⭐ Level Up</button>
-        <button onclick="playSoundFX('badumtss')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-discord-red border border-black/20">🥁 Ba-Dum-Tss</button>
-        <button onclick="playSoundFX('victory')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-cyan-400 border border-black/20">🏆 Victory</button>
-        <button onclick="playSoundFX('join')" class="p-4 bg-discord-serverbar hover:bg-discord-hover rounded-xl flex items-center justify-center font-bold text-sm text-emerald-400 border border-black/20">🔔 Join Chime</button>
+        <button onclick="playSoundFx('airhorn')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">📢</span>
+          <div>
+            <div class="font-bold text-xs text-white">Airhorn</div>
+            <div class="text-[10px] text-gray-400">Synth Blast</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('quack')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">🦆</span>
+          <div>
+            <div class="font-bold text-xs text-white">Quack</div>
+            <div class="text-[10px] text-gray-400">Duck Sound</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('levelup')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">⭐</span>
+          <div>
+            <div class="font-bold text-xs text-white">Level Up</div>
+            <div class="text-[10px] text-gray-400">8-Bit Arpeggio</div>
+          </div>
+        </button>
+        <button onclick="playSoundFx('badumtss')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 hover:border-indigo-500 text-left transition flex items-center space-x-3">
+          <span class="text-2xl">🥁</span>
+          <div>
+            <div class="font-bold text-xs text-white">Ba-Dum-Tss</div>
+            <div class="text-[10px] text-gray-400">Rimshot</div>
+          </div>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 5: CREATE SERVER -->
-  <div id="create-server-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-sm rounded-xl p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-discord-textHeader mb-1">Create Server</h3>
-      <div class="space-y-3 my-4">
-        <input type="text" id="input-server-name" placeholder="Server Name" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
+  <!-- THEME STORE MODAL -->
+  <div id="theme-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-palette text-indigo-400"></i>
+        <span>Theme Customization</span>
+      </h3>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button onclick="setTheme('dark')" class="bg-[#1e1f22] p-3 rounded-xl border border-gray-700 text-left hover:border-indigo-500 transition">
+          <div class="font-bold text-sm text-white">Discord Dark</div>
+          <p class="text-[11px] text-gray-400">Classic dark theme</p>
+        </button>
+        <button onclick="setTheme('oled')" class="bg-black p-3 rounded-xl border border-gray-800 text-left hover:border-indigo-500 transition">
+          <div class="font-bold text-sm text-white">OLED Black</div>
+          <p class="text-[11px] text-gray-400">Pure pitch black</p>
+        </button>
+        <button onclick="setTheme('cyberpunk')" class="bg-[#0f0529] p-3 rounded-xl border border-purple-700 text-left hover:border-pink-500 transition">
+          <div class="font-bold text-sm text-pink-400">Cyberpunk</div>
+          <p class="text-[11px] text-gray-400">Neon violet vibe</p>
+        </button>
+        <button onclick="setTheme('vaporwave')" class="bg-[#2b0e4a] p-3 rounded-xl border border-pink-700 text-left hover:border-yellow-400 transition">
+          <div class="font-bold text-sm text-yellow-300">Vaporwave</div>
+          <p class="text-[11px] text-gray-400">Retro 80s aesthetic</p>
+        </button>
       </div>
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal('create-server-modal')" class="text-xs text-discord-textMuted hover:text-white px-3 py-2">Cancel</button>
-        <button onclick="createNewServer()" class="bg-discord-brand text-white text-xs font-bold px-4 py-2 rounded">Create</button>
+      <div class="flex justify-end">
+        <button onclick="closeThemeModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-xl">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 6: CREATE CHANNEL -->
-  <div id="create-channel-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-sm rounded-xl p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-discord-textHeader mb-1">Create Channel</h3>
-      <div class="space-y-3 my-4">
+  <!-- USER PROFILE SETTINGS MODAL -->
+  <div id="profile-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-user-gear text-indigo-400"></i>
+        <span>User Profile Settings</span>
+      </h3>
+      <div class="space-y-4">
         <div>
-          <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Type</label>
-          <select id="select-channel-type" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Display Name</label>
+          <input id="modal-name-input" type="text" maxlength="20" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Avatar Image URL</label>
+          <input id="modal-avatar-input" type="text" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3">
+          <button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
+          <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE SERVER MODAL -->
+  <div id="server-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-server text-indigo-400 mr-2"></i> Create New Server</h3>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Server Name</label>
+          <input id="new-server-name" type="text" placeholder="My Awesome Server" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3">
+          <button onclick="closeCreateServerModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
+          <button onclick="createServer()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Create Server</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE CHANNEL MODAL -->
+  <div id="channel-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-hashtag text-indigo-400 mr-2"></i> Create Channel</h3>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Channel Name</label>
+          <input id="new-channel-name" type="text" placeholder="general-chat" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Channel Type</label>
+          <select id="new-channel-type" class="w-full bg-[#111214] border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
             <option value="text">Text Channel</option>
             <option value="voice">Voice Channel</option>
           </select>
         </div>
-        <div>
-          <label class="text-xs font-bold text-discord-textMuted uppercase block mb-1">Name</label>
-          <input type="text" id="input-channel-name" placeholder="new-channel" class="w-full bg-discord-serverbar text-sm text-discord-textHeader p-2.5 rounded border border-black/40 focus:outline-none">
+        <div class="flex justify-end space-x-2 pt-3">
+          <button onclick="closeCreateChannelModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold rounded-xl transition">Cancel</button>
+          <button onclick="createChannel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Create Channel</button>
         </div>
       </div>
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal('create-channel-modal')" class="text-xs text-discord-textMuted hover:text-white px-3 py-2">Cancel</button>
-        <button onclick="createNewChannel()" class="bg-discord-brand text-white text-xs font-bold px-4 py-2 rounded">Create Channel</button>
-      </div>
     </div>
   </div>
 
-  <!-- MODAL 7: GIF SELECTOR -->
-  <div id="gif-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-md rounded-xl p-4 shadow-2xl flex flex-col h-[420px]">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="font-bold text-discord-textHeader text-sm">Select GIF</h3>
-        <button onclick="closeModal('gif-modal')" class="text-discord-gray hover:text-white">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <div id="gif-results-grid" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 no-scrollbar"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 8: PINNED MESSAGES -->
-  <div id="pinned-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-discord-channels border border-black/40 w-full max-w-md rounded-xl p-4 shadow-2xl flex flex-col h-[400px]">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="font-bold text-discord-textHeader text-sm">Pinned Messages</h3>
-        <button onclick="closeModal('pinned-modal')" class="text-discord-gray hover:text-white">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-      <div id="pinned-messages-list" class="flex-1 overflow-y-auto space-y-2"></div>
-    </div>
-  </div>
-
-  <!-- MODAL 9: LIGHTBOX IMAGE PREVIEW -->
-  <div id="lightbox-modal" onclick="closeModal('lightbox-modal')" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4 cursor-pointer">
-    <img id="lightbox-image" src="" class="max-w-full max-h-[90vh] rounded-lg object-contain shadow-2xl">
-  </div>
-
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
+  <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
-    // ABLY API KEY CONFIGURATION CONSTANT
+    // =========================================================================
+    // 🔑 ABLY REALTIME API KEY CONFIGURATION
+    // =========================================================================
     const ABLY_API_KEY = "P-x9Xw.2O-Uiw:mGxpHZynD8v6ZcsTSbOs1OBwntMAtW_dcTgvTB8aUos";
+    // =========================================================================
 
-    // Standard Default Servers State
-    const DEFAULT_SERVERS = [
-      {
-        id: 'sdr-main',
-        name: 'SDR Central Hub',
-        icon: '',
-        textChannels: [
-          { id: 'general', name: 'general', topic: 'General discussion hub' },
-          { id: 'announcements', name: 'announcements', topic: 'Official platform news' },
-          { id: 'lounge', name: 'dev-lounge', topic: 'Developer chat & code snippets' }
-        ],
-        voiceChannels: [{ id: 'voice-lounge', name: 'Voice Lounge' }]
-      }
+    let ably = null;
+    let globalChannel = null;
+    let currentChannelObj = null;
+    let isSoundEnabled = true;
+    let isVoiceActive = false;
+    let typingTimer = null;
+    let activeMediaStream = null;
+    let screenShareStream = null;
+
+    const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
+
+    // Default built-in peers for offline/local mode testing
+    const DEFAULT_BOT_PEERS = [
+      { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" },
+      { id: "usr_sarah", name: "Sarah_Gamer", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Sarah" },
+      { id: "usr_cyberbot", name: "CyberBot", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=CyberBot" }
     ];
 
-    // Local Storage Data Structures
-    let servers = JSON.parse(localStorage.getItem('sdr_servers')) || DEFAULT_SERVERS;
-    let channelHistories = JSON.parse(localStorage.getItem('sdr_histories')) || {};
-    let pinnedMessages = JSON.parse(localStorage.getItem('sdr_pins')) || [];
-    let dmThreads = JSON.parse(localStorage.getItem('sdr_dms')) || [];
-
-    // Profile Setup with Session ID to avoid duplicates
-    const sessionId = 'usr_' + Math.floor(Math.random() * 899999 + 100000);
-    let userProfile = JSON.parse(localStorage.getItem('sdr_profile')) || {
-      id: sessionId,
-      name: 'User' + Math.floor(Math.random() * 899 + 100),
-      avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${sessionId}`,
-      status: 'online',
-      statusMsg: 'Coding in SDRChat 🚀'
+    let user = {
+      id: "usr_" + Math.random().toString(36).substring(2, 9),
+      name: localStorage.getItem('sdr_name') || "User_" + Math.floor(100 + Math.random() * 900),
+      avatar: localStorage.getItem('sdr_avatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=" + Math.random()
     };
-    userProfile.id = userProfile.id || sessionId;
 
-    let activeServerId = 'sdr-main'; // 'dm' or server id
-    let activeChannelId = 'general'; // channel id or target userId for DMs
-    let activeDMPeer = null;         // Peer object if activeServerId === 'dm'
+    let activeTab = 'channels'; // 'channels' or 'dms'
+    let activeDMTarget = null; // target user object when in DM mode
 
-    let isMuted = false;
-    let isDeafened = false;
-    let isScreenSharing = false;
-    let isCamActive = false;
-
-    // Realtime & Presence Tracking Engine
-    let ablyRealtime = null;
-    let ablyChannel = null;
-    let broadcastChannel = new BroadcastChannel('sdr_discord_fallback');
-
-    // Deduplicated Member Store Map
-    let onlineMembersMap = new Map();
-
-    // Default Local Mock Peers for Out-of-the-Box Local DM Mode
-    const MOCK_PEERS = [
-      { id: 'bot_alex', name: 'Alex_Dev', status: 'online', statusMsg: 'Building SDRChat 💻', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alex' },
-      { id: 'bot_sarah', name: 'Sarah_Gamer', status: 'idle', statusMsg: '🎮 Playing Wordle', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=Sarah' },
-      { id: 'bot_cyber', name: 'CyberBot', status: 'online', statusMsg: '🤖 AI Assistant', avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberBot' }
-    ];
-
-    function initRealtimeEngine() {
-      // Register local self
-      onlineMembersMap.set(userProfile.id, {
-        id: userProfile.id,
-        name: userProfile.name,
-        avatarUrl: userProfile.avatarUrl,
-        status: userProfile.status,
-        statusMsg: userProfile.statusMsg
-      });
-
-      if (ABLY_API_KEY && ABLY_API_KEY !== "YOUR_ABLY_API_KEY_HERE") {
-        try {
-          ablyRealtime = new Ably.Realtime({ key: ABLY_API_KEY, clientId: userProfile.id });
-          ablyChannel = ablyRealtime.channels.get('sdr-chat-global');
-
-          ablyRealtime.connection.on('connected', () => {
-            const badge = document.getElementById('ably-status-badge');
-            if (badge) badge.classList.remove('hidden');
-            document.getElementById('ably-status-text').innerText = 'Ably Connected';
-          });
-
-          ablyChannel.subscribe('msg', (message) => {
-            handleIncomingRealtimeMessage(message.data);
-          });
-
-          // Presence updates with deduplication
-          ablyChannel.presence.enter({ name: userProfile.name, avatarUrl: userProfile.avatarUrl, statusMsg: userProfile.statusMsg });
-          
-          ablyChannel.presence.subscribe(['enter', 'present', 'update'], (member) => {
-            if (member.clientId) {
-              const data = member.data || {};
-              onlineMembersMap.set(member.clientId, {
-                id: member.clientId,
-                name: data.name || member.clientId,
-                avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${member.clientId}`,
-                status: 'online',
-                statusMsg: data.statusMsg || 'Online'
-              });
-              renderMembers();
-            }
-          });
-
-          ablyChannel.presence.subscribe('leave', (member) => {
-            if (member.clientId && member.clientId !== userProfile.id) {
-              onlineMembersMap.delete(member.clientId);
-              renderMembers();
-            }
-          });
-
-        } catch (e) {
-          setupFallbackBroadcast();
-        }
-      } else {
-        setupFallbackBroadcast();
-      }
-    }
-
-    function setupFallbackBroadcast() {
-      const badge = document.getElementById('ably-status-badge');
-      if (badge) {
-        badge.classList.remove('hidden');
-        badge.classList.replace('text-discord-green', 'text-discord-yellow');
-        document.getElementById('ably-status-text').innerText = 'Local Offline Mode';
-      }
-
-      // Add local mock peers to offline mode map
-      MOCK_PEERS.forEach(peer => onlineMembersMap.set(peer.id, peer));
-      renderMembers();
-
-      broadcastChannel.onmessage = (event) => {
-        handleIncomingRealtimeMessage(event.data);
-      };
-    }
-
-    function sendRealtimePayload(payload) {
-      if (ablyChannel) {
-        ablyChannel.publish('msg', payload);
-      } else {
-        broadcastChannel.postMessage(payload);
-        handleIncomingRealtimeMessage(payload);
-      }
-    }
-
-    function handleIncomingRealtimeMessage(data) {
-      const { type, payload } = data;
-      
-      if (type === 'NEW_MESSAGE') {
-        saveMessageToHistory(payload.serverId, payload.channelId, payload.msg);
-        if (payload.serverId === activeServerId && payload.channelId === activeChannelId) {
-          renderMessage(payload.msg);
-        }
-      } else if (type === 'WORDLE_GUESS') {
-        handleRemoteWordleGuess(payload);
-      } else if (type === 'TTT_MOVE') {
-        handleRemoteTTTMove(payload);
-      } else if (type === 'RPS_CHOICE') {
-        handleRemoteRPSChoice(payload);
-      } else if (type === 'POLL_VOTE') {
-        handleRemotePollVote(payload);
-      } else if (type === 'TYPING') {
-        if (payload.user !== userProfile.name) triggerTypingUI(payload.user);
-      }
-    }
-
-    function openDirectMessage(peer) {
-      if (!peer) return;
-      activeServerId = 'dm';
-      activeChannelId = peer.id;
-      activeDMPeer = peer;
-
-      // Ensure thread exists
-      if (!dmThreads.some(d => d.id === peer.id)) {
-        dmThreads.push(peer);
-        localStorage.setItem('sdr_dms', JSON.stringify(dmThreads));
-      }
-
-      renderServerList();
-      renderDMView();
-    }
-
-    function renderDMView() {
-      document.getElementById('active-server-name').innerText = 'Direct Messages';
-      document.getElementById('text-channels-section').classList.add('hidden');
-      document.getElementById('voice-channels-section').classList.add('hidden');
-      document.getElementById('dm-list-section').classList.remove('hidden');
-
-      const dmContainer = document.getElementById('dm-chats-container');
-      dmContainer.innerHTML = '';
-
-      dmThreads.forEach(peer => {
-        const isSelected = activeServerId === 'dm' && activeChannelId === peer.id;
-        const btn = document.createElement('button');
-        btn.onclick = () => openDirectMessage(peer);
-        btn.className = `w-full flex items-center gap-2.5 px-2 py-2 rounded-md transition-all text-sm font-medium ${isSelected ? 'bg-discord-active text-white' : 'text-discord-textMuted hover:bg-discord-hover hover:text-discord-textHeader'}`;
-        btn.innerHTML = `
-          <div class="relative flex-shrink-0">
-            <img src="${peer.avatarUrl}" class="w-7 h-7 rounded-full bg-discord-serverbar object-cover">
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-discord-green border-2 border-discord-channels rounded-full"></span>
-          </div>
-          <span class="truncate">${peer.name}</span>
-        `;
-        dmContainer.appendChild(btn);
-      });
-
-      if (activeDMPeer) {
-        document.getElementById('active-channel-title').innerText = `@${activeDMPeer.name}`;
-        document.getElementById('welcome-title').innerText = `Direct Message with @${activeDMPeer.name}`;
-        document.getElementById('chat-textarea').placeholder = `Message @${activeDMPeer.name}`;
-        loadChannelHistory('dm', activeDMPeer.id);
-      }
-    }
-
-    function renderMembers() {
-      const list = document.getElementById('active-peers-list');
-      if (!list) return;
-      list.innerHTML = '';
-
-      const sortedMembers = Array.from(onlineMembersMap.values());
-      document.getElementById('online-count').innerText = sortedMembers.length;
-
-      sortedMembers.forEach(peer => {
-        const isSelf = peer.id === userProfile.id;
-        const item = document.createElement('div');
-        item.onclick = () => { if (!isSelf) openDirectMessage(peer); };
-        item.className = "flex items-center gap-2.5 p-2 rounded-md hover:bg-discord-hover cursor-pointer group transition-colors";
-        item.innerHTML = `
-          <div class="relative flex-shrink-0">
-            <img src="${peer.avatarUrl}" class="w-8 h-8 rounded-full bg-discord-serverbar object-cover">
-            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-discord-green border-2 border-discord-channels rounded-full"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold text-discord-textHeader truncate flex items-center gap-1">
-              <span>${peer.name}</span>
-              ${isSelf ? '<span class="text-[9px] bg-discord-brand/40 text-discord-brand px-1 rounded font-normal">YOU</span>' : ''}
-            </p>
-            <p class="text-[10px] text-discord-textMuted truncate">${peer.statusMsg || 'Online'}</p>
-          </div>
-        `;
-        list.appendChild(item);
-      });
-    }
-
-    // Hardware Audio & Device Management
-    async function refreshHardwareDevices() {
-      try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {});
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          
-          const micSelect = document.getElementById('select-mic-device');
-          const speakerSelect = document.getElementById('select-speaker-device');
-          
-          micSelect.innerHTML = '<option value="">Default Microphone</option>';
-          speakerSelect.innerHTML = '<option value="">Default Speaker</option>';
-
-          devices.forEach((device) => {
-            if (device.kind === 'audioinput') {
-              const opt = document.createElement('option');
-              opt.value = device.deviceId;
-              opt.innerText = device.label || `Microphone ${micSelect.length}`;
-              micSelect.appendChild(opt);
-            } else if (device.kind === 'audiooutput') {
-              const opt = document.createElement('option');
-              opt.value = device.deviceId;
-              opt.innerText = device.label || `Speaker ${speakerSelect.length}`;
-              speakerSelect.appendChild(opt);
-            }
-          });
-          showToast('Audio hardware devices refreshed!');
-        }
-      } catch (e) {
-        showToast('Microphone permissions required for device scan.');
-      }
-    }
-
-    async function changeAudioSink(deviceId) {
-      const audioElem = document.getElementById('webcam-video-element');
-      if (audioElem && typeof audioElem.setSinkId === 'function') {
-        try {
-          await audioElem.setSinkId(deviceId);
-          showToast('Audio output sink updated!');
-        } catch (err) {
-          showToast('Audio output routing failed or unsupported.');
-        }
-      }
-    }
-
-    // MINI-GAME 1: WORDLE MULTIPLAYER
-    const WORDLE_WORDS = ["CRANE", "STORM", "PLANT", "SHARK", "LIGHT", "BLAST", "CLOUD", "CANDY", "SDRCHAT"];
-    
-    function renderWordleWidget(msg) {
-      const data = msg.extraData;
-      let gridRows = '';
-      
-      for (let r = 0; r < 6; r++) {
-        const guess = data.guesses[r] || "";
-        let rowCells = '';
-        
-        for (let c = 0; c < 5; c++) {
-          const char = guess[c] || "";
-          let bgClass = "bg-discord-serverbar border-black/30";
-          
-          if (guess) {
-            if (char === data.targetWord[c]) {
-              bgClass = "bg-discord-green text-white font-bold border-discord-green";
-            } else if (data.targetWord.includes(char)) {
-              bgClass = "bg-discord-yellow text-white font-bold border-discord-yellow";
-            } else {
-              bgClass = "bg-discord-gray/40 text-discord-textMuted border-transparent";
-            }
-          }
-          
-          rowCells += `<div class="w-8 h-8 rounded border flex items-center justify-center text-xs uppercase font-bold ${bgClass}">${char}</div>`;
-        }
-        gridRows += `<div class="flex gap-1 justify-center">${rowCells}</div>`;
-      }
-
-      const isGameOver = data.isWon || data.guesses.length >= 6;
-      let statusText = isGameOver ? (data.isWon ? "🎉 Word Solved!" : `❌ Word was ${data.targetWord}`) : `Guessing (${data.guesses.length}/6)`;
-
-      return `<div class="p-4 bg-discord-channels rounded-xl border border-black/40 w-64 my-2 text-center space-y-3">
-        <div class="flex justify-between items-center text-xs font-extrabold text-discord-textHeader">
-          <span>🟩 WORDLE</span>
-          <span class="text-discord-brand">${statusText}</span>
-        </div>
-        <div class="space-y-1">${gridRows}</div>
-        ${!isGameOver ? `
-          <div class="flex gap-1 mt-2">
-            <input type="text" maxlength="5" id="wordle-input-${msg.id}" placeholder="5-LETTER" class="w-full bg-discord-serverbar text-xs uppercase text-center p-2 rounded border border-black/30 focus:outline-none">
-            <button onclick="submitWordleGuess('${msg.id}')" class="bg-discord-brand text-white font-bold px-3 py-1 rounded text-xs">GUESS</button>
-          </div>
-        ` : `<button onclick="executeSlashCommand('/wordle')" class="w-full bg-discord-green text-white font-bold py-1.5 rounded text-xs">Play New Wordle</button>`}
-      </div>`;
-    }
-
-    function submitWordleGuess(msgId) {
-      const input = document.getElementById(`wordle-input-${msgId}`);
-      if (!input) return;
-      const guess = input.value.trim().toUpperCase();
-      
-      if (guess.length !== 5) {
-        showToast('Guess must be exactly 5 letters!');
-        return;
-      }
-
-      sendRealtimePayload({
-        type: 'WORDLE_GUESS',
-        payload: { serverId: activeServerId, channelId: activeChannelId, msgId, guess, user: userProfile.name }
-      });
-    }
-
-    function handleRemoteWordleGuess(p) {
-      const key = getChannelKey(p.serverId, p.channelId);
-      if (channelHistories[key]) {
-        const msg = channelHistories[key].find(m => m.id === p.msgId);
-        if (msg && msg.extraData && msg.extraData.guesses.length < 6) {
-          msg.extraData.guesses.push(p.guess);
-          if (p.guess === msg.extraData.targetWord) msg.extraData.isWon = true;
-
-          if (p.serverId === activeServerId && p.channelId === activeChannelId) {
-            const elem = document.getElementById(p.msgId);
-            if (elem) elem.querySelector('.discord-markdown').innerHTML = renderWordleWidget(msg);
+    let state = JSON.parse(localStorage.getItem('sdr_state')) || {
+      servers: {
+        "sdr-central": {
+          id: "sdr-central",
+          name: "SDR Central",
+          icon: "bolt",
+          channels: {
+            "general": { id: "general", name: "general", type: "text" },
+            "memes": { id: "memes", name: "memes", type: "text" },
+            "voice": { id: "voice", name: "Voice Lounge", type: "voice" }
           }
         }
+      },
+      currentServer: "sdr-central",
+      currentChannel: "general",
+      messages: {},
+      dms: {
+        "usr_alex": { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" }
       }
-    }
+    };
 
-    // MINI-GAME 2: ROCK PAPER SCISSORS
-    function renderRPSWidget(msg) {
-      const data = msg.extraData;
-      const choices = data.choices || {};
-      const players = Object.keys(choices);
-      let statusStr = "Waiting for moves...";
-
-      if (players.length === 2) {
-        const [p1, p2] = players;
-        const c1 = choices[p1];
-        const c2 = choices[p2];
-
-        if (c1 === c2) statusStr = `🤝 Tie between ${p1} and ${p2}!`;
-        else if (
-          (c1 === 'rock' && c2 === 'scissors') ||
-          (c1 === 'paper' && c2 === 'rock') ||
-          (c1 === 'scissors' && c2 === 'paper')
-        ) {
-          statusStr = `🏆 ${p1} wins against ${p2}!`;
-        } else {
-          statusStr = `🏆 ${p2} wins against ${p1}!`;
-        }
-      }
-
-      return `<div class="p-3 bg-discord-channels rounded-xl border border-black/40 w-60 my-2">
-        <p class="font-extrabold text-xs text-discord-textHeader mb-1">✂️ Rock Paper Scissors</p>
-        <p class="text-[11px] text-discord-textMuted mb-2">${statusStr}</p>
-        <div class="grid grid-cols-3 gap-1.5">
-          <button onclick="submitRPSChoice('${msg.id}', 'rock')" class="bg-discord-serverbar hover:bg-discord-hover p-2 rounded text-base">🪨</button>
-          <button onclick="submitRPSChoice('${msg.id}', 'paper')" class="bg-discord-serverbar hover:bg-discord-hover p-2 rounded text-base">📄</button>
-          <button onclick="submitRPSChoice('${msg.id}', 'scissors')" class="bg-discord-serverbar hover:bg-discord-hover p-2 rounded text-base">✂️</button>
-        </div>
-      </div>`;
-    }
-
-    function submitRPSChoice(msgId, choice) {
-      sendRealtimePayload({
-        type: 'RPS_CHOICE',
-        payload: { serverId: activeServerId, channelId: activeChannelId, msgId, choice, user: userProfile.name }
-      });
-    }
-
-    function handleRemoteRPSChoice(p) {
-      const key = getChannelKey(p.serverId, p.channelId);
-      if (channelHistories[key]) {
-        const msg = channelHistories[key].find(m => m.id === p.msgId);
-        if (msg && msg.extraData) {
-          msg.extraData.choices[p.user] = p.choice;
-
-          // AI auto-play response if playing alone
-          if (Object.keys(msg.extraData.choices).length === 1 && onlineMembersMap.size <= 1) {
-            const aiChoices = ['rock', 'paper', 'scissors'];
-            msg.extraData.choices['CyberBot AI'] = aiChoices[Math.floor(Math.random() * 3)];
-          }
-
-          if (p.serverId === activeServerId && p.channelId === activeChannelId) {
-            const elem = document.getElementById(p.msgId);
-            if (elem) elem.querySelector('.discord-markdown').innerHTML = renderRPSWidget(msg);
-          }
-        }
-      }
-    }
-
-    // MINI-GAME 3: TIC TAC TOE
-    function renderTTTWidget(msg) {
-      const data = msg.extraData;
-      let gridHtml = '';
-      
-      data.board.forEach((val, idx) => {
-        gridHtml += `
-          <button onclick="playTTTMove('${msg.id}', ${idx})" class="w-12 h-12 bg-discord-serverbar hover:bg-discord-hover font-extrabold text-lg text-discord-textHeader rounded border border-black/30 flex items-center justify-center">
-            ${val || ''}
-          </button>
-        `;
-      });
-
-      return `<div class="p-3 bg-discord-channels rounded-xl border border-black/40 w-48 my-2">
-        <p class="font-extrabold text-xs text-discord-textHeader mb-2">🎮 Tic-Tac-Toe (Turn: ${data.turn})</p>
-        <div class="grid grid-cols-3 gap-1">${gridHtml}</div>
-      </div>`;
-    }
-
-    function playTTTMove(msgId, idx) {
-      sendRealtimePayload({
-        type: 'TTT_MOVE',
-        payload: { serverId: activeServerId, channelId: activeChannelId, msgId, idx }
-      });
-    }
-
-    function handleRemoteTTTMove(p) {
-      const key = getChannelKey(p.serverId, p.channelId);
-      if (channelHistories[key]) {
-        const msg = channelHistories[key].find(m => m.id === p.msgId);
-        if (msg && msg.extraData && !msg.extraData.board[p.idx]) {
-          msg.extraData.board[p.idx] = msg.extraData.turn;
-          msg.extraData.turn = msg.extraData.turn === 'X' ? 'O' : 'X';
-
-          if (p.serverId === activeServerId && p.channelId === activeChannelId) {
-            const elem = document.getElementById(p.msgId);
-            if (elem) elem.querySelector('.discord-markdown').innerHTML = renderTTTWidget(msg);
-          }
-        }
-      }
-    }
-
-    async function toggleScreenShare() {
-      try {
-        if (!isScreenSharing) {
-          const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const videoElem = document.getElementById('screen-video-element');
-          videoElem.srcObject = stream;
-          videoElem.classList.remove('hidden');
-          document.getElementById('local-avatar-container').classList.add('hidden');
-          isScreenSharing = true;
-          showToast('Screen sharing started!');
-
-          stream.getVideoTracks()[0].onended = () => {
-            videoElem.classList.add('hidden');
-            document.getElementById('local-avatar-container').classList.remove('hidden');
-            isScreenSharing = false;
-          };
-        } else {
-          document.getElementById('screen-video-element').classList.add('hidden');
-          document.getElementById('local-avatar-container').classList.remove('hidden');
-          isScreenSharing = false;
-        }
-      } catch (err) {
-        showToast('Screen sharing cancelled or unsupported.');
-      }
-    }
-
-    async function toggleCamera() {
-      try {
-        if (!isCamActive) {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          const videoElem = document.getElementById('webcam-video-element');
-          videoElem.srcObject = stream;
-          videoElem.classList.remove('hidden');
-          document.getElementById('local-avatar-container').classList.add('hidden');
-          isCamActive = true;
-          showToast('Webcam turned on!');
-        } else {
-          const videoElem = document.getElementById('webcam-video-element');
-          if (videoElem.srcObject) {
-            videoElem.srcObject.getTracks().forEach(t => t.stop());
-          }
-          videoElem.classList.add('hidden');
-          document.getElementById('local-avatar-container').classList.remove('hidden');
-          isCamActive = false;
-        }
-      } catch (err) {
-        showToast('Camera permission denied.');
-      }
-    }
-
-    // Application Startup Lifecycle Execution
-    window.onload = function() {
-      initRealtimeEngine();
-      renderServerList();
-      switchServer(activeServerId);
+    window.addEventListener('DOMContentLoaded', () => {
       updateProfileUI();
-      populateGifs();
-      setupDragAndDrop();
-      refreshHardwareDevices();
-      marked.setOptions({ gfm: true, breaks: true });
-    };
+      renderServers();
+      renderChannels();
+      loadMessagesForCurrentChannel();
+      initAbly();
+      populateMicrophonesAndSpeakers();
 
-    function renderServerList() {
-      const container = document.getElementById('server-list');
-      container.innerHTML = '';
+      const savedTheme = localStorage.getItem('sdr_theme') || 'dark';
+      setTheme(savedTheme);
+    });
 
-      servers.forEach(server => {
-        const item = document.createElement('div');
-        item.className = "relative group flex items-center justify-center w-full";
-        const isSelected = activeServerId === server.id;
-        item.innerHTML = `
-          <div class="server-pill absolute left-0 w-1 rounded-r-full bg-white transition-all duration-200 ${isSelected ? 'h-10' : 'h-0 group-hover:h-5'}"></div>
-          <button onclick="switchServer('${server.id}')" class="w-12 h-12 rounded-[24px] group-hover:rounded-[16px] bg-discord-channels group-hover:bg-discord-brand text-discord-textHeader flex items-center justify-center transition-all font-bold text-xs relative">
-            ${server.name.substring(0, 3).toUpperCase()}
-          </button>
-        `;
-        container.appendChild(item);
-      });
+    function saveState() {
+      localStorage.setItem('sdr_state', JSON.stringify(state));
     }
 
-    function switchServer(serverId) {
-      activeServerId = serverId;
+    function getActiveChannelKey() {
+      if (activeTab === 'dms' && activeDMTarget) {
+        return `dm_${[user.id, activeDMTarget.id].sort().join('_')}`;
+      }
+      return `${state.currentServer}_${state.currentChannel}`;
+    }
 
-      if (serverId === 'dm') {
-        renderDMView();
+    function initAbly() {
+      if (!ABLY_API_KEY || ABLY_API_KEY === "YOUR_ABLY_API_KEY_HERE") {
+        document.getElementById('api-warning').classList.remove('hidden');
+        document.getElementById('connection-status').innerText = "Local Mode";
+        document.getElementById('connection-status').className = "bg-purple-500/20 text-purple-400 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30";
+        renderMemberList(DEFAULT_BOT_PEERS.map(b => ({ clientId: b.id, data: b })));
         return;
       }
 
-      document.getElementById('text-channels-section').classList.remove('hidden');
-      document.getElementById('voice-channels-section').classList.remove('hidden');
-      document.getElementById('dm-list-section').classList.add('hidden');
+      try {
+        ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: user.id });
+        ably.connection.on('connected', () => {
+          document.getElementById('connection-status').innerText = "Ably Live";
+          document.getElementById('connection-status').className = "bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30";
+          
+          globalChannel = ably.channels.get('sdr_global_sync');
+          globalChannel.subscribe('structure', (msg) => {
+            handleGlobalStructureSync(msg.data);
+          });
 
-      const server = servers.find(s => s.id === serverId) || servers[0];
-      document.getElementById('active-server-name').innerText = server.name;
-      renderServerList();
-      renderChannelsForServer(server);
-      if (server.textChannels.length > 0) setActiveChannel(server.textChannels[0].id);
+          subscribeToCurrentChannel();
+        });
+      } catch (e) {
+        console.error("Ably Init Error:", e);
+      }
     }
 
-    function renderChannelsForServer(server) {
-      const textContainer = document.getElementById('text-channels-container');
-      const voiceContainer = document.getElementById('voice-channels-container');
-      textContainer.innerHTML = ''; voiceContainer.innerHTML = '';
+    function subscribeToCurrentChannel() {
+      if (!ably) return;
+      if (currentChannelObj) currentChannelObj.unsubscribe();
 
-      server.textChannels.forEach(chan => {
-        const btn = document.createElement('button');
-        btn.onclick = () => setActiveChannel(chan.id);
-        btn.className = "chan-btn w-full flex items-center px-2 py-1.5 rounded-md text-discord-textMuted hover:bg-discord-hover hover:text-discord-textHeader text-sm font-medium transition-all group";
-        btn.innerHTML = `<i class="fa-solid fa-hashtag text-xs mr-2"></i><span class="truncate">${chan.name}</span>`;
-        textContainer.appendChild(btn);
+      let chanKey = activeTab === 'dms' && activeDMTarget 
+        ? `sdr_dm_${[user.id, activeDMTarget.id].sort().join('_')}`
+        : `sdr_${state.currentServer}_${state.currentChannel}`;
+
+      currentChannelObj = ably.channels.get(chanKey);
+
+      currentChannelObj.subscribe('msg', (msg) => handleIncomingMessage(msg.data, chanKey));
+      currentChannelObj.subscribe('mutation', (msg) => handleIncomingMutation(msg.data));
+      currentChannelObj.subscribe('typing', (msg) => {
+        if (msg.data.userId !== user.id) showTypingIndicator(msg.data.userName);
       });
 
-      server.voiceChannels.forEach(chan => {
-        const btn = document.createElement('button');
-        btn.onclick = () => joinVoiceChannel(chan.name);
-        btn.className = "w-full flex items-center px-2 py-1.5 rounded-md text-discord-textMuted hover:bg-discord-hover hover:text-discord-textHeader text-sm font-medium transition-all group";
-        btn.innerHTML = `<i class="fa-solid fa-volume-high text-xs mr-2"></i><span class="truncate">${chan.name}</span>`;
-        voiceContainer.appendChild(btn);
+      currentChannelObj.presence.enter({ name: user.name, avatar: user.avatar, id: user.id });
+      currentChannelObj.presence.subscribe(() => updatePresenceMembers());
+      updatePresenceMembers();
+    }
+
+    function updatePresenceMembers() {
+      if (!currentChannelObj) return;
+      currentChannelObj.presence.get((err, members) => {
+        if (!err) renderMemberList(members);
       });
     }
 
-    function setActiveChannel(channelId) {
-      activeChannelId = channelId;
-      const server = servers.find(s => s.id === activeServerId);
-      const chan = server ? server.textChannels.find(c => c.id === channelId) : null;
-      const name = chan ? chan.name : channelId;
-
-      document.getElementById('active-channel-title').innerText = name;
-      document.getElementById('welcome-title').innerText = `Welcome to #${name}!`;
-      document.getElementById('chat-textarea').placeholder = `Message #${name}`;
-
-      loadChannelHistory(activeServerId, channelId);
-    }
-
-    function getChannelKey(serverId, channelId) { return `${serverId}_${channelId}`; }
-
-    function saveMessageToHistory(serverId, channelId, msgObj) {
-      const key = getChannelKey(serverId, channelId);
-      if (!channelHistories[key]) channelHistories[key] = [];
-      if (!channelHistories[key].some(m => m.id === msgObj.id)) {
-        channelHistories[key].push(msgObj);
-        localStorage.setItem('sdr_histories', JSON.stringify(channelHistories));
-      }
-    }
-
-    function loadChannelHistory(serverId, channelId) {
-      const container = document.getElementById('live-messages-container');
-      container.innerHTML = '';
-      const history = channelHistories[getChannelKey(serverId, channelId)] || [];
-      history.forEach(msg => renderMessage(msg));
-    }
-
-    function sendChatMessage() {
-      const textarea = document.getElementById('chat-textarea');
-      const text = textarea.value.trim();
-      if (!text) return;
-
-      if (text.startsWith('/')) {
-        handleSlashCommand(text);
-      } else {
-        broadcastMessage(text);
-      }
-      textarea.value = '';
-      document.getElementById('slash-menu').classList.add('hidden');
-    }
-
-    function broadcastMessage(contentStr, isMedia = false, customType = null, extraData = {}) {
-      const msgObj = {
-        id: 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-        user: userProfile.name,
-        avatar: userProfile.avatarUrl,
-        content: contentStr,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isMedia: isMedia,
-        customType: customType,
-        extraData: extraData,
-        reactions: {}
-      };
-
-      saveMessageToHistory(activeServerId, activeChannelId, msgObj);
-      sendRealtimePayload({ type: 'NEW_MESSAGE', payload: { serverId: activeServerId, channelId: activeChannelId, msg: msgObj } });
-      playSoundFX('message');
-    }
-
-    function renderMessage(msg) {
-      const container = document.getElementById('live-messages-container');
-      if (document.getElementById(msg.id)) return;
-
-      const msgNode = document.createElement('div');
-      msgNode.id = msg.id;
-      msgNode.className = "group flex gap-4 hover:bg-[#2e3035] -mx-4 px-4 py-1.5 transition-colors relative";
-
-      let bodyHtml = marked.parse(msg.content);
-      bodyHtml = bodyHtml.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
-
-      if (msg.isMedia) {
-        bodyHtml = `<img src="${msg.content}" onclick="openLightbox('${msg.content}')" class="mt-2 rounded-lg max-w-sm max-h-64 object-cover border border-black/40 cursor-pointer">`;
-      } else if (msg.customType === 'wordle') {
-        bodyHtml = renderWordleWidget(msg);
-      } else if (msg.customType === 'rps') {
-        bodyHtml = renderRPSWidget(msg);
-      } else if (msg.customType === 'tictactoe') {
-        bodyHtml = renderTTTWidget(msg);
-      } else if (msg.customType === 'poll') {
-        bodyHtml = renderPollWidget(msg);
+    function renderMemberList(members) {
+      const list = document.getElementById('member-list');
+      
+      const memberMap = new Map();
+      if (members && members.length) {
+        members.forEach(m => {
+          if (m.data) memberMap.set(m.data.id || m.clientId, m.data);
+        });
       }
 
-      msgNode.innerHTML = `
-        <img src="${msg.avatar}" class="w-10 h-10 rounded-full bg-discord-serverbar object-cover flex-shrink-0 mt-0.5">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-sm text-discord-textHeader hover:underline cursor-pointer">${msg.user}</span>
-            <span class="text-[10px] text-discord-textMuted">${msg.timestamp}</span>
-            <div class="opacity-0 group-hover:opacity-100 flex items-center gap-2 text-discord-gray hover:text-white text-xs ml-auto">
-              <button onclick="addReaction('${msg.id}', '🔥')" title="React">🔥</button>
-              <button onclick="addReaction('${msg.id}', '❤️')" title="React">❤️</button>
-              <button onclick="pinMessage('${msg.id}')" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
-            </div>
+      // Add default bots if in offline local mode
+      if (!ably) {
+        DEFAULT_BOT_PEERS.forEach(b => memberMap.set(b.id, b));
+      }
+
+      document.getElementById('member-count').innerText = memberMap.size || 1;
+
+      let html = `
+        <div class="flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-[#1e1f22]">
+          <div class="relative">
+            <img src="${user.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+            <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
           </div>
-          <div class="text-sm text-discord-textNormal discord-markdown leading-relaxed break-words">${bodyHtml}</div>
-          <div id="reactions-${msg.id}" class="flex gap-1 mt-1 flex-wrap"></div>
+          <span class="text-xs font-semibold text-gray-200 truncate">${user.name} (You)</span>
         </div>
       `;
 
-      container.appendChild(msgNode);
-      const feed = document.getElementById('message-feed');
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    function handleSlashCommand(cmdStr) {
-      if (cmdStr === '/wordle') {
-        const word = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
-        broadcastMessage('🟩 Started Wordle Game!', false, 'wordle', { targetWord: word, guesses: [], isWon: false });
-      } else if (cmdStr === '/rps') {
-        broadcastMessage('✂️ Started Rock Paper Scissors!', false, 'rps', { choices: {} });
-      } else if (cmdStr === '/tictactoe') {
-        broadcastMessage('🎮 Started Tic-Tac-Toe!', false, 'tictactoe', { board: Array(9).fill(null), turn: 'X' });
-      } else if (cmdStr.startsWith('/poll')) {
-        const parts = cmdStr.match(/"([^"]+)"/g);
-        if (parts && parts.length >= 3) {
-          const question = parts[0].replace(/"/g, '');
-          const options = parts.slice(1).map(p => p.replace(/"/g, ''));
-          broadcastMessage(`Poll: ${question}`, false, 'poll', { question, options, votes: {} });
-        } else {
-          showToast('Usage: /poll "Question" "Option 1" "Option 2"');
-        }
-      } else if (cmdStr === '/roll') {
-        broadcastMessage(`🎲 Rolled a d20: **${Math.floor(Math.random() * 20) + 1}**`);
-      } else if (cmdStr === '/shrug') {
-        broadcastMessage('¯\\_(ツ)_/¯');
-      } else if (cmdStr === '/clear') {
-        document.getElementById('live-messages-container').innerHTML = '';
-      }
-    }
-
-    function renderPollWidget(msg) {
-      const data = msg.extraData;
-      const votes = data.votes || {};
-      const totalVotes = Object.keys(votes).length || 1;
-
-      let optionsHtml = '';
-      data.options.forEach((opt, idx) => {
-        const count = Object.values(votes).filter(v => v === idx).length;
-        const pct = Math.round((count / totalVotes) * 100);
-        optionsHtml += `
-          <div onclick="votePoll('${msg.id}', ${idx})" class="p-2 bg-discord-serverbar hover:bg-discord-hover rounded-lg border border-black/30 cursor-pointer relative overflow-hidden my-1">
-            <div class="absolute top-0 left-0 bottom-0 bg-discord-brand/30 transition-all" style="width: ${pct}%"></div>
-            <div class="relative flex justify-between text-xs font-bold text-discord-textHeader">
-              <span>${opt}</span>
-              <span>${pct}% (${count})</span>
-            </div>
-          </div>
-        `;
-      });
-
-      return `<div class="p-3 bg-discord-channels rounded-xl border border-black/40 max-w-md my-2">
-        <p class="font-extrabold text-sm text-discord-textHeader mb-2">📊 ${data.question}</p>
-        ${optionsHtml}
-      </div>`;
-    }
-
-    function votePoll(msgId, optIdx) {
-      sendRealtimePayload({ type: 'POLL_VOTE', payload: { serverId: activeServerId, channelId: activeChannelId, msgId, optIdx, user: userProfile.name } });
-    }
-
-    function handleRemotePollVote(p) {
-      const key = getChannelKey(p.serverId, p.channelId);
-      if (channelHistories[key]) {
-        const msg = channelHistories[key].find(m => m.id === p.msgId);
-        if (msg && msg.extraData) {
-          msg.extraData.votes[p.user] = p.optIdx;
-          if (p.serverId === activeServerId && p.channelId === activeChannelId) {
-            const elem = document.getElementById(p.msgId);
-            if (elem) elem.querySelector('.discord-markdown').innerHTML = renderPollWidget(msg);
-          }
-        }
-      }
-    }
-
-    function addReaction(msgId, emoji) {
-      const key = getChannelKey(activeServerId, activeChannelId);
-      const msg = channelHistories[key].find(m => m.id === msgId);
-      if (msg) {
-        if (!msg.reactions[emoji]) msg.reactions[emoji] = 0;
-        msg.reactions[emoji]++;
-        localStorage.setItem('sdr_histories', JSON.stringify(channelHistories));
-        
-        const reactContainer = document.getElementById(`reactions-${msgId}`);
-        if (reactContainer) {
-          reactContainer.innerHTML = Object.entries(msg.reactions).map(([e, count]) => `
-            <span class="bg-discord-serverbar text-xs px-2 py-0.5 rounded-full border border-black/30 flex items-center gap-1 font-bold">
-              <span>${e}</span> <span>${count}</span>
-            </span>
-          `).join('');
-        }
-      }
-    }
-
-    function setupDragAndDrop() {
-      const dz = document.getElementById('drop-zone');
-      dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('bg-discord-hover'); });
-      dz.addEventListener('dragleave', () => dz.classList.remove('bg-discord-hover'));
-      dz.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dz.classList.remove('bg-discord-hover');
-        if (e.dataTransfer.files.length > 0) {
-          const reader = new FileReader();
-          reader.onload = (evt) => broadcastMessage(evt.target.result, true);
-          reader.readAsDataURL(e.dataTransfer.files[0]);
+      memberMap.forEach((mUser, mId) => {
+        if (mId !== user.id) {
+          html += `
+            <button onclick="startDirectMessage('${mUser.id}', '${mUser.name}', '${mUser.avatar}')" class="w-full flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#1e1f22] hover:bg-[#35373c] transition group">
+              <div class="flex items-center space-x-2 min-w-0">
+                <div class="relative shrink-0">
+                  <img src="${mUser.avatar}" class="w-6 h-6 rounded-full border border-gray-700 bg-gray-900">
+                  <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-900"></span>
+                </div>
+                <span class="text-xs font-semibold text-gray-300 truncate">${mUser.name}</span>
+              </div>
+              <i class="fa-solid fa-message text-[10px] text-gray-500 group-hover:text-indigo-400 transition"></i>
+            </button>
+          `;
         }
       });
+
+      list.innerHTML = html;
     }
 
-    function insertFormatting(prefix, suffix) {
-      const ta = document.getElementById('chat-textarea');
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const sel = ta.value.substring(start, end);
-      ta.value = ta.value.substring(0, start) + prefix + sel + suffix + ta.value.substring(end);
-      ta.focus();
-    }
-
-    function joinVoiceChannel(roomName) {
-      document.getElementById('voice-active-bar').classList.remove('hidden');
-      document.getElementById('voice-active-room-name').innerText = roomName;
-      playSoundFX('join');
-      showToast(`Connected to Voice: ${roomName}`);
-    }
-
-    function leaveVoiceChannel() {
-      document.getElementById('voice-active-bar').classList.add('hidden');
-      document.getElementById('voice-grid-view').classList.add('hidden');
-    }
-
-    function toggleVoiceGridFullscreen() {
-      document.getElementById('voice-grid-view').classList.toggle('hidden');
-    }
-
-    function toggleMute() {
-      isMuted = !isMuted;
-      document.getElementById('btn-mute').classList.toggle('text-discord-red', isMuted);
-      showToast(isMuted ? 'Muted' : 'Unmuted');
-    }
-
-    function toggleDeafen() {
-      isDeafened = !isDeafened;
-      document.getElementById('btn-deafen').classList.toggle('text-discord-red', isDeafened);
-      showToast(isDeafened ? 'Deafened' : 'Undeafened');
-    }
-
-    function saveProfile() {
-      const name = document.getElementById('input-display-name').value.trim();
-      const status = document.getElementById('select-user-status').value;
-      const avatar = document.getElementById('input-avatar-url').value.trim();
-      const statusMsg = document.getElementById('input-status-message').value.trim();
-
-      if (name) userProfile.name = name;
-      userProfile.status = status;
-      if (avatar) userProfile.avatarUrl = avatar;
-      if (statusMsg) userProfile.statusMsg = statusMsg;
-
-      localStorage.setItem('sdr_profile', JSON.stringify(userProfile));
+    function startDirectMessage(targetId, targetName, targetAvatar) {
+      activeDMTarget = { id: targetId, name: targetName, avatar: targetAvatar };
+      state.dms[targetId] = { id: targetId, name: targetName, avatar: targetAvatar };
+      saveState();
       
-      // Update local member map entry
-      onlineMembersMap.set(userProfile.id, {
-        id: userProfile.id,
-        name: userProfile.name,
-        avatarUrl: userProfile.avatarUrl,
-        status: userProfile.status,
-        statusMsg: userProfile.statusMsg
-      });
-
-      updateProfileUI();
-      renderMembers();
-      closeModal('profile-modal');
+      switchSidebarTab('dms');
+      renderDMsList();
+      loadMessagesForCurrentChannel();
+      if (ably) subscribeToCurrentChannel();
     }
 
-    function updateProfileUI() {
-      document.getElementById('user-bar-avatar').src = userProfile.avatarUrl;
-      document.getElementById('user-bar-name').innerText = userProfile.name;
-      document.getElementById('user-bar-status-text').innerText = userProfile.statusMsg || 'Online';
-      document.getElementById('call-local-avatar').src = userProfile.avatarUrl;
-      document.getElementById('call-local-name').innerText = userProfile.name;
+    function switchSidebarTab(tab) {
+      activeTab = tab;
+      document.getElementById('channels-view').classList.toggle('hidden', tab !== 'channels');
+      document.getElementById('dms-view').classList.toggle('hidden', tab !== 'dms');
+      
+      document.getElementById('tab-channels-btn').className = tab === 'channels' ? 'flex-1 py-2 text-white border-b-2 border-indigo-500 transition' : 'flex-1 py-2 text-gray-400 hover:text-white transition';
+      document.getElementById('tab-dms-btn').className = tab === 'dms' ? 'flex-1 py-2 text-white border-b-2 border-indigo-500 transition' : 'flex-1 py-2 text-gray-400 hover:text-white transition';
+
+      if (tab === 'dms') {
+        if (!activeDMTarget) {
+          const firstDMKey = Object.keys(state.dms)[0];
+          if (firstDMKey) activeDMTarget = state.dms[firstDMKey];
+        }
+        renderDMsList();
+        loadMessagesForCurrentChannel();
+      }
     }
 
-    function performSearchInHistory(q) {
-      const query = q.toLowerCase();
-      const list = document.getElementById('search-results-list');
-      list.innerHTML = '';
-      const history = channelHistories[getChannelKey(activeServerId, activeChannelId)] || [];
-
-      const filtered = history.filter(m => m.content && m.content.toLowerCase().includes(query));
-      if (filtered.length === 0) {
-        list.innerHTML = `<p class="text-xs text-discord-textMuted text-center my-6">No matching messages found.</p>`;
+    function renderDMsList() {
+      const container = document.getElementById('dms-view');
+      let html = '';
+      const dmKeys = Object.keys(state.dms);
+      
+      if (dmKeys.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click any user in the Online Peers sidebar to DM!</p>';
         return;
       }
 
-      filtered.forEach(m => {
-        const div = document.createElement('div');
-        div.className = "p-2 bg-discord-serverbar rounded border border-black/30 text-xs text-discord-textHeader";
-        div.innerHTML = `<span class="font-bold text-discord-brand">${m.user}:</span> ${m.content}`;
-        list.appendChild(div);
+      dmKeys.forEach(dmId => {
+        const target = state.dms[dmId];
+        const isActive = activeDMTarget && activeDMTarget.id === dmId;
+        html += `
+          <button onclick="selectDM('${target.id}')" class="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-lg text-sm ${isActive ? 'bg-[#35373c] text-white font-medium' : 'text-gray-400 hover:bg-[#35373c]/50 hover:text-gray-200'} transition">
+            <img src="${target.avatar}" class="w-5 h-5 rounded-full bg-gray-900 border border-gray-700 shrink-0">
+            <span class="truncate">${target.name}</span>
+          </button>
+        `;
       });
+      container.innerHTML = html;
     }
 
-    function setAppTheme(theme) {
-      document.documentElement.className = `h-full theme-${theme}`;
-      showToast(`Applied ${theme} theme`);
+    function selectDM(dmId) {
+      activeDMTarget = state.dms[dmId];
+      renderDMsList();
+      loadMessagesForCurrentChannel();
+      if (ably) subscribeToCurrentChannel();
     }
 
-    function filterChannels(query) {
-      const q = query.toLowerCase();
-      document.querySelectorAll('#text-channels-container button, #voice-channels-container button, #dm-chats-container button').forEach(btn => {
-        btn.style.display = btn.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
-      });
-    }
-
-    function toggleCategory(containerId) {
-      const container = document.getElementById(containerId);
-      container.classList.toggle('hidden');
-    }
-
-    function createNewServer() {
-      const name = document.getElementById('input-server-name').value.trim();
-      if (!name) return;
-      const ns = { id: 's_' + Date.now(), name, textChannels: [{ id: 'general', name: 'general' }], voiceChannels: [] };
-      servers.push(ns);
-      localStorage.setItem('sdr_servers', JSON.stringify(servers));
-      closeModal('create-server-modal');
-      switchServer(ns.id);
-    }
-
-    function createNewChannel() {
-      const name = document.getElementById('input-channel-name').value.trim().toLowerCase().replace(/\s+/g, '-');
-      const type = document.getElementById('select-channel-type').value;
-      if (!name) return;
-      const s = servers.find(srv => srv.id === activeServerId);
-      if (type === 'text') s.textChannels.push({ id: 'c_' + Date.now(), name });
-      else s.voiceChannels.push({ id: 'v_' + Date.now(), name });
-      localStorage.setItem('sdr_servers', JSON.stringify(servers));
-      renderChannelsForServer(s);
-      closeModal('create-channel-modal');
-    }
-
-    const SAMPLE_GIFS = [
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHJsdjNyMXpxNHJyZnEycTJnbmxuaXhmdWZ6bjVnY3ptb3lsbTllcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vR1v87PInm2aI9i/giphy.gif",
-      "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZtNXlsYm1rb3lmcWZqZXgxaXB4ZXpsYmVqZWV6ZWVicXByZWVjeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26ufdipQqU2lhNA4g/giphy.gif"
-    ];
-
-    function populateGifs() {
-      const grid = document.getElementById('gif-results-grid');
-      grid.innerHTML = '';
-      SAMPLE_GIFS.forEach(url => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = "w-full h-28 object-cover rounded-lg cursor-pointer hover:scale-105 transition-transform";
-        img.onclick = () => { broadcastMessage(url, true); closeModal('gif-modal'); };
-        grid.appendChild(img);
-      });
-    }
-
-    function pinMessage(msgId) {
-      const key = getChannelKey(activeServerId, activeChannelId);
-      const msg = channelHistories[key].find(m => m.id === msgId);
-      if (msg && !pinnedMessages.some(p => p.id === msgId)) {
-        pinnedMessages.push(msg);
-        localStorage.setItem('sdr_pins', JSON.stringify(pinnedMessages));
-        showToast('Message Pinned!');
+    function broadcastStructureChange(type, payload) {
+      if (ably && globalChannel) {
+        globalChannel.publish('structure', { type, payload });
       }
     }
 
-    function triggerTypingUI(userName) {
-      const ind = document.getElementById('typing-indicator');
-      document.getElementById('typing-user-name').innerText = userName;
-      ind.classList.remove('opacity-0');
-      clearTimeout(window.typingTimer);
-      window.typingTimer = setTimeout(() => ind.classList.add('opacity-0'), 2500);
-    }
-
-    // Audio FX Synthesizer
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSoundFX(type) {
-      try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const now = audioCtx.currentTime;
-
-        if (type === 'message') {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.frequency.setValueAtTime(659.25, now);
-          osc.frequency.setValueAtTime(880, now + 0.08);
-          gain.gain.setValueAtTime(0.1, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.start(now); osc.stop(now + 0.25);
-        } else if (type === 'airhorn') {
-          for(let i=0; i<3; i++) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300 + i*50, now + i*0.1);
-            gain.gain.setValueAtTime(0.2, now + i*0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.2);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(now + i*0.1); osc.stop(now + i*0.1 + 0.2);
-          }
-        } else if (type === 'quack') {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(150, now);
-          osc.frequency.linearRampToValueAtTime(300, now + 0.15);
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.start(now); osc.stop(now + 0.2);
-        } else if (type === 'levelup') {
-          [261, 329, 392, 523].forEach((freq, idx) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(freq, now + idx*0.08);
-            gain.gain.setValueAtTime(0.15, now + idx*0.08);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + idx*0.08 + 0.2);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(now + idx*0.08); osc.stop(now + idx*0.08 + 0.2);
-          });
-        } else if (type === 'victory') {
-          [440, 554, 659, 880].forEach((freq, idx) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(freq, now + idx*0.1);
-            gain.gain.setValueAtTime(0.15, now + idx*0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + idx*0.1 + 0.3);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(now + idx*0.1); osc.stop(now + idx*0.3);
-          });
-        } else if (type === 'join') {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.frequency.setValueAtTime(400, now);
-          osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.start(now); osc.stop(now + 0.2);
+    function handleGlobalStructureSync(data) {
+      if (data.type === 'newServer') {
+        state.servers[data.payload.id] = data.payload;
+      } else if (data.type === 'newChannel') {
+        if (state.servers[data.payload.serverId]) {
+          state.servers[data.payload.serverId].channels[data.payload.channel.id] = data.payload.channel;
         }
-      } catch(e) {}
+      }
+      saveState();
+      renderServers();
+      renderChannels();
     }
 
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
-    function toggleEmojiPicker() { document.getElementById('emoji-tray').classList.toggle('hidden'); }
-    function appendEmoji(e) { document.getElementById('chat-textarea').value += e; toggleEmojiPicker(); }
-    function triggerImageUpload() { document.getElementById('file-input').click(); }
+    function createServer() {
+      const name = document.getElementById('new-server-name').value.trim();
+      if (!name) return;
+      const key = 'srv_' + Date.now();
+      const newSrv = {
+        id: key,
+        name: name,
+        icon: 'globe',
+        channels: { "general": { id: "general", name: "general", type: "text" } }
+      };
+      state.servers[key] = newSrv;
+      saveState();
+      broadcastStructureChange('newServer', newSrv);
+      closeCreateServerModal();
+      switchServer(key);
+    }
 
-    function handleFileSelected(e) {
-      if (e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (evt) => broadcastMessage(evt.target.result, true);
-        reader.readAsDataURL(e.target.files[0]);
+    function createChannel() {
+      const name = document.getElementById('new-channel-name').value.trim();
+      const type = document.getElementById('new-channel-type').value;
+      if (!name) return;
+      const key = name.toLowerCase().replace(/\s+/g, '-');
+      const newChan = { id: key, name: name, type: type };
+      state.servers[state.currentServer].channels[key] = newChan;
+      saveState();
+      broadcastStructureChange('newChannel', { serverId: state.currentServer, channel: newChan });
+      closeCreateChannelModal();
+      renderChannels();
+    }
+
+    function renderServers() {
+      const container = document.getElementById('servers-list-container');
+      let html = '';
+      Object.keys(state.servers).forEach(srvKey => {
+        const srv = state.servers[srvKey];
+        const isActive = state.currentServer === srvKey && activeTab === 'channels';
+        html += `
+          <button onclick="switchServer('${srvKey}')" class="relative group w-11 h-11 rounded-${isActive ? 'xl' : '2xl'} bg-${isActive ? 'indigo-600' : '[#2b2d31]'} hover:bg-indigo-600 flex items-center justify-center text-white transition-all duration-200 shadow-md">
+            <i class="fa-solid fa-${srv.icon || 'bolt'} text-lg"></i>
+          </button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderChannels() {
+      const srv = state.servers[state.currentServer];
+      document.getElementById('current-server-title').innerText = srv.name;
+      const container = document.getElementById('channels-view');
+      let html = '<p class="px-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Channels</p><div class="space-y-0.5">';
+
+      Object.keys(srv.channels).forEach(chanKey => {
+        const chan = srv.channels[chanKey];
+        const isActive = state.currentChannel === chanKey && activeTab === 'channels';
+        const icon = chan.type === 'voice' ? 'volume-high text-emerald-400' : 'hashtag text-gray-400';
+        html += `
+          <button onclick="switchChannel('${chanKey}')" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-sm ${isActive ? 'bg-[#35373c] text-white font-medium' : 'text-gray-400 hover:bg-[#35373c]/50 hover:text-gray-200'} transition">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-${icon}"></i>
+              <span>${chan.name}</span>
+            </div>
+          </button>
+        `;
+      });
+      container.innerHTML = html + '</div>';
+    }
+
+    function switchServer(srvKey) {
+      activeTab = 'channels';
+      switchSidebarTab('channels');
+      state.currentServer = srvKey;
+      state.currentChannel = Object.keys(state.servers[srvKey].channels)[0];
+      saveState();
+      renderServers();
+      renderChannels();
+      loadMessagesForCurrentChannel();
+      if (ably) subscribeToCurrentChannel();
+    }
+
+    function switchChannel(chanKey) {
+      activeTab = 'channels';
+      if (state.servers[state.currentServer].channels[chanKey].type === 'voice') {
+        joinVoiceCall();
+        openVideoCallModal();
+        return;
+      }
+      state.currentChannel = chanKey;
+      saveState();
+      renderChannels();
+      loadMessagesForCurrentChannel();
+      if (ably) subscribeToCurrentChannel();
+    }
+
+    function loadMessagesForCurrentChannel() {
+      const container = document.getElementById('chat-messages');
+      const chanId = getActiveChannelKey();
+      const messages = state.messages[chanId] || [];
+
+      if (activeTab === 'dms' && activeDMTarget) {
+        document.getElementById('header-title').innerText = `@${activeDMTarget.name}`;
+        document.getElementById('channel-subtitle').innerText = 'Direct Message';
+      } else {
+        document.getElementById('header-title').innerText = `#${state.servers[state.currentServer].channels[state.currentChannel].name}`;
+        document.getElementById('channel-subtitle').innerText = state.servers[state.currentServer].name;
+      }
+
+      let html = `
+        <div class="border-b border-gray-800 pb-4 mb-4">
+          <h2 class="text-2xl font-bold text-white">${activeTab === 'dms' ? 'Direct Message with ' + (activeDMTarget ? activeDMTarget.name : 'User') : 'Welcome to #' + state.servers[state.currentServer].channels[state.currentChannel].name + '!'}</h2>
+          <p class="text-sm text-gray-400">This is the start of message history.</p>
+        </div>
+      `;
+
+      let lastUserId = null;
+
+      messages.forEach((msg, idx) => {
+        const isSequential = lastUserId === msg.user.id;
+        lastUserId = msg.user.id;
+        html += renderMessageHTML(msg, idx, isSequential);
+      });
+
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+      updatePinnedList();
+    }
+
+    function renderMessageHTML(msg, idx, isSequential) {
+      const chanId = getActiveChannelKey();
+
+      if (msg.type === 'poll') {
+        let totalVotes = 0;
+        Object.values(msg.pollData.votes || {}).forEach(v => totalVotes += v);
+
+        let optionsHTML = '';
+        msg.pollData.options.forEach((opt, oIdx) => {
+          const count = (msg.pollData.votes && msg.pollData.votes[oIdx]) || 0;
+          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          optionsHTML += `
+            <button onclick="votePoll('${chanId}', '${msg.msgId}', ${oIdx})" class="w-full bg-[#2b2d31] hover:bg-[#35373c] p-2.5 rounded-xl text-left relative overflow-hidden transition border border-gray-700/50 my-1">
+              <div class="absolute inset-0 bg-indigo-600/20 transition-all duration-300" style="width: ${pct}%"></div>
+              <div class="flex justify-between items-center relative z-10 text-xs font-semibold">
+                <span class="text-gray-200">${opt}</span>
+                <span class="text-indigo-400 font-bold">${count} votes (${pct}%)</span>
+              </div>
+            </button>
+          `;
+        });
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full font-bold">📊 POLL</span>
+              </div>
+              <h4 class="font-bold text-white text-sm mb-2">${msg.pollData.question}</h4>
+              <div>${optionsHTML}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'wordle') {
+        let guessesHTML = '';
+        (msg.gameData.guesses || []).forEach(g => {
+          let tiles = '';
+          g.result.forEach((res, i) => {
+            const bg = res === 'G' ? 'bg-emerald-600' : (res === 'Y' ? 'bg-amber-500' : 'bg-gray-700');
+            tiles += `<span class="${bg} text-white font-bold w-6 h-6 rounded flex items-center justify-center text-xs uppercase">${g.word[i]}</span>`;
+          });
+          guessesHTML += `<div class="flex space-x-1 my-1">${tiles}<span class="text-[10px] text-gray-400 ml-2 self-center">${g.user}</span></div>`;
+        });
+
+        const status = msg.gameData.solved 
+          ? `🎉 Solved by ${msg.gameData.winner}! Word was: <strong>${msg.gameData.target}</strong>`
+          : 'Guess the 5-letter word below:';
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-md bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-green-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-green-500/20 text-green-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🟩 WORDLE MULTIPLAYER</span>
+              </div>
+              <p class="text-xs text-gray-300 mb-2">${status}</p>
+              <div class="mb-3">${guessesHTML}</div>
+              ${!msg.gameData.solved ? `
+                <form onsubmit="submitWordleGuess(event, '${chanId}', '${msg.msgId}')" class="flex space-x-2">
+                  <input type="text" maxlength="5" placeholder="5 LETTERS" class="bg-[#111214] border border-gray-700 rounded-lg px-2 py-1 text-xs text-white uppercase focus:outline-none focus:border-green-500 flex-1">
+                  <button type="submit" class="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1 rounded-lg font-bold transition">Guess</button>
+                </form>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'tictactoe') {
+        let boardHTML = '<div class="grid grid-cols-3 gap-1 w-36 my-2">';
+        msg.gameData.board.forEach((cell, cellIdx) => {
+          boardHTML += `<button onclick="playTicTacToe('${chanId}', '${msg.msgId}', ${cellIdx})" class="w-11 h-11 bg-[#1e1f22] text-sm font-bold text-white rounded-lg border border-gray-700 hover:bg-gray-800 flex items-center justify-center">${cell || ''}</button>`;
+        });
+        boardHTML += '</div>';
+
+        let statusText = msg.gameData.winner 
+          ? (msg.gameData.winner === 'DRAW' ? '🤝 Game Draw!' : `🎉 Winner: ${msg.gameData.winner}!`)
+          : `Turn: <strong class="text-indigo-400">${msg.gameData.turn}</strong>`;
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="font-bold text-xs text-emerald-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-emerald-500/20 text-emerald-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🎮 TIC-TAC-TOE</span>
+              </div>
+              <p class="text-xs text-gray-300">${statusText}</p>
+              ${boardHTML}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'rps') {
+        let p1 = msg.gameData.p1;
+        let p2 = msg.gameData.p2;
+
+        let status = 'Waiting for players...';
+        if (p1 && p2) {
+          if (p1.move === p2.move) status = `🤝 Draw! Both chose ${p1.move}`;
+          else if (
+            (p1.move === '✊' && p2.move === '✌️') ||
+            (p1.move === '✋' && p2.move === '✊') ||
+            (p1.move === '✌️' && p2.move === '✋')
+          ) {
+            status = `🎉 ${p1.name} won! (${p1.move} beats ${p2.move})`;
+          } else {
+            status = `🎉 ${p2.name} won! (${p2.move} beats ${p1.move})`;
+          }
+        }
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/80 p-4 rounded-2xl border border-gray-700 shadow-md">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-amber-400">${msg.user.name}</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">✊ ROCK PAPER SCISSORS</span>
+              </div>
+              <div class="flex space-x-2 my-2">
+                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✊')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✊</button>
+                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✋')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✋</button>
+                <button onclick="playRPS('${chanId}', '${msg.msgId}', '✌️')" class="px-3 py-2 bg-[#1e1f22] hover:bg-amber-600/30 rounded-xl border border-gray-700 text-lg">✌️</button>
+              </div>
+              <p class="text-xs text-gray-300">${status}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      let content = parseMarkdownHTML(msg.text);
+      if (msg.image) {
+        content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
+      }
+      if (msg.video) {
+        content += `
+          <video controls class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">
+            <source src="${msg.video}">
+            Your browser does not support video playback.
+          </video>
+        `;
+      }
+
+      let reactionsHTML = '';
+      if (msg.reactions && Object.keys(msg.reactions).length > 0) {
+        reactionsHTML = '<div class="flex flex-wrap gap-1 mt-1.5">';
+        Object.keys(msg.reactions).forEach(emoji => {
+          reactionsHTML += `<button onclick="addReaction('${chanId}', '${msg.msgId}', '${emoji}')" class="bg-[#2b2d31] border border-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-indigo-600/20 transition">${emoji} ${msg.reactions[emoji]}</button>`;
+        });
+        reactionsHTML += '</div>';
+      }
+
+      if (isSequential) {
+        return `
+          <div class="group relative hover:bg-[#2b2d31]/30 pl-12 pr-2 py-0.5 rounded-lg transition" id="msg-card-${msg.msgId}">
+            <div class="text-sm text-gray-200 leading-relaxed">${content}</div>
+            ${reactionsHTML}
+            <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
+              <button onclick="addReaction('${chanId}', '${msg.msgId}', '❤️')" class="hover:text-red-400">❤️</button>
+              <button onclick="addReaction('${chanId}', '${msg.msgId}', '🔥')" class="hover:text-yellow-400">🔥</button>
+              <button onclick="addReaction('${chanId}', '${msg.msgId}', '👍')" class="hover:text-blue-400">👍</button>
+              <button onclick="pinMessage('${chanId}', '${msg.msgId}')" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="flex items-start space-x-3 mt-3 mb-1 group relative hover:bg-[#2b2d31]/30 p-1.5 rounded-xl transition" id="msg-card-${msg.msgId}">
+          <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+          <div class="flex-1 overflow-hidden">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-xs text-indigo-400">${msg.user.name}</span>
+              <span class="text-[10px] text-gray-500">${msg.time}</span>
+            </div>
+            <div class="text-sm text-gray-200 mt-0.5 leading-relaxed">${content}</div>
+            ${reactionsHTML}
+          </div>
+
+          <div class="absolute right-2 -top-3 hidden group-hover:flex items-center bg-[#1e1f22] border border-gray-700 rounded-lg shadow-lg px-2 py-1 space-x-2 text-xs">
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '❤️')" class="hover:text-red-400">❤️</button>
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '🔥')" class="hover:text-yellow-400">🔥</button>
+            <button onclick="addReaction('${chanId}', '${msg.msgId}', '👍')" class="hover:text-blue-400">👍</button>
+            <button onclick="pinMessage('${chanId}', '${msg.msgId}')" class="hover:text-indigo-400" title="Pin Message"><i class="fa-solid fa-thumbtack"></i></button>
+          </div>
+        </div>
+      `;
+    }
+
+    function parseMarkdownHTML(text) {
+      let result = escapeHTML(text);
+      if (result.startsWith('```') && result.endsWith('```')) {
+        const code = result.slice(3, -3);
+        return `<pre class="bg-gray-950 p-3 rounded-lg text-xs font-mono text-emerald-400 border border-gray-800 overflow-x-auto my-1">\${code}</pre>`;
+      }
+      result = result.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler-text" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+      result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      return result;
+    }
+
+    function wrapWholeMessage(type) {
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      if (type === 'bold') input.value = `**\${val}**`;
+      else if (type === 'italic') input.value = `*\${val}*`;
+      else if (type === 'code') input.value = `\`\`\`${val}\`\`\``;
+      else if (type === 'spoiler') input.value = `||${val}||`;
+      input.focus();
+    }
+
+    function handleSendMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (text.startsWith('/poll')) {
+        const matches = text.match(/"([^"]+)"/g);
+        if (matches && matches.length >= 3) {
+          const question = matches[0].replace(/"/g, '');
+          const options = matches.slice(1).map(m => m.replace(/"/g, ''));
+          const pollMsg = {
+            msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+            user: user,
+            type: 'poll',
+            pollData: { question, options, votes: {} },
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          sendOrPublish(pollMsg);
+          input.value = '';
+          return;
+        }
+      }
+
+      if (text.startsWith('/wordle')) {
+        const word = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
+        const wordleMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'wordle',
+          gameData: { target: word, guesses: [], solved: false, winner: null },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(wordleMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/tictactoe')) {
+        const gameMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'tictactoe',
+          gameData: { board: Array(9).fill(null), turn: "X", winner: null },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(gameMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/rps')) {
+        const rpsMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'rps',
+          gameData: { p1: null, p2: null },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(rpsMsg);
+        input.value = '';
+        return;
+      }
+
+      const msg = {
+        msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+        user: user,
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      sendOrPublish(msg);
+      input.value = '';
+
+      // Auto reply simulation if in offline DM mode
+      if (!ably && activeTab === 'dms' && activeDMTarget) {
+        setTimeout(() => {
+          const replyMsg = {
+            msgId: "m_" + Date.now(),
+            user: activeDMTarget,
+            text: `Hey! I received your message: "${text}". SDRChat DMs are working smoothly! 🚀`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          handleIncomingMessage(replyMsg, getActiveChannelKey());
+        }, 1000);
       }
     }
 
-    function handleTypingInput(elem) {
-      document.getElementById('slash-menu').classList.toggle('hidden', !elem.value.startsWith('/'));
-      sendRealtimePayload({ type: 'TYPING', payload: { user: userProfile.name } });
+    function sendOrPublish(msg) {
+      const activeKey = getActiveChannelKey();
+      handleIncomingMessage(msg, activeKey);
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('msg', msg);
+      }
     }
 
-    function handleKeyDown(e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+    function handleIncomingMessage(msg, incomingChanKey) {
+      const currentActiveKey = getActiveChannelKey();
+      const targetChanKey = incomingChanKey || currentActiveKey;
+
+      if (!state.messages[targetChanKey]) state.messages[targetChanKey] = [];
+
+      if (state.messages[targetChanKey].some(m => m.msgId === msg.msgId)) return;
+
+      state.messages[targetChanKey].push(msg);
+      saveState();
+
+      // IF user is CURRENTLY looking at this exact channel/DM, render it immediately
+      if (targetChanKey === currentActiveKey) {
+        loadMessagesForCurrentChannel();
+      } else if (msg.user.id !== user.id) {
+        // SMART NOTIFICATION TRIGGER: Only trigger when NOT currently viewing this room
+        showCustomDiscordToast(msg, targetChanKey);
+        playNotificationChime();
+      }
     }
 
-    function executeSlashCommand(cmd) {
-      document.getElementById('chat-textarea').value = cmd + ' ';
-      document.getElementById('slash-menu').classList.add('hidden');
-      document.getElementById('chat-textarea').focus();
+    function showCustomDiscordToast(msg, targetChanKey) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = "toast-anim pointer-events-auto bg-[#1e1f22] border border-indigo-500/40 shadow-2xl rounded-2xl p-3 flex items-start space-x-3 text-xs w-72 text-white hover:border-indigo-500 cursor-pointer transition";
+      
+      toast.innerHTML = `
+        <img src="${msg.user.avatar}" class="w-8 h-8 rounded-full border border-gray-700 bg-gray-900 shrink-0">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-indigo-400 truncate">${msg.user.name}</span>
+            <span class="text-[9px] text-gray-500">${msg.time}</span>
+          </div>
+          <p class="text-gray-200 text-xs truncate mt-0.5">${msg.text || 'Sent an attachment'}</p>
+        </div>
+      `;
+
+      toast.onclick = () => {
+        if (targetChanKey.startsWith('dm_')) {
+          switchSidebarTab('dms');
+        } else {
+          switchSidebarTab('channels');
+        }
+        toast.remove();
+      };
+
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
     }
 
-    function openLightbox(url) {
-      document.getElementById('lightbox-image').src = url;
-      openModal('lightbox-modal');
+    function playNotificationChime() {
+      if (!isSoundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.08); // A5
+
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.1);
+        osc2.start(ctx.currentTime + 0.08);
+        osc2.stop(ctx.currentTime + 0.35);
+      } catch (e) {}
     }
 
-    function toggleMemberList() {
+    function submitWordleGuess(e, chanId, msgId) {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const guess = input.value.trim().toUpperCase();
+      if (guess.length !== 5) return;
+
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg || msg.gameData.solved) return;
+
+      const target = msg.gameData.target;
+      let res = Array(5).fill('B');
+      let targetArr = target.split('');
+
+      for (let i = 0; i < 5; i++) {
+        if (guess[i] === target[i]) {
+          res[i] = 'G';
+          targetArr[i] = null;
+        }
+      }
+      for (let i = 0; i < 5; i++) {
+        if (res[i] !== 'G' && targetArr.includes(guess[i])) {
+          res[i] = 'Y';
+          targetArr[targetArr.indexOf(guess[i])] = null;
+        }
+      }
+
+      msg.gameData.guesses.push({ word: guess, result: res, user: user.name });
+      if (guess === target) {
+        msg.gameData.solved = true;
+        msg.gameData.winner = user.name;
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'wordle', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function playTicTacToe(chanId, msgId, cellIdx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg || msg.gameData.winner || msg.gameData.board[cellIdx]) return;
+
+      msg.gameData.board[cellIdx] = msg.gameData.turn;
+      
+      const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      let winner = null;
+      wins.forEach(w => {
+        const [a,b,c] = w;
+        if (msg.gameData.board[a] && msg.gameData.board[a] === msg.gameData.board[b] && msg.gameData.board[a] === msg.gameData.board[c]) {
+          winner = msg.gameData.board[a];
+        }
+      });
+
+      if (winner) msg.gameData.winner = winner;
+      else if (msg.gameData.board.every(c => c !== null)) msg.gameData.winner = 'DRAW';
+      else msg.gameData.turn = msg.gameData.turn === 'X' ? 'O' : 'X';
+
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'tictactoe', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function playRPS(chanId, msgId, move) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      if (!msg.gameData.p1) {
+        msg.gameData.p1 = { id: user.id, name: user.name, move };
+      } else if (!msg.gameData.p2 && msg.gameData.p1.id !== user.id) {
+        msg.gameData.p2 = { id: user.id, name: user.name, move };
+      } else if (!ably) {
+        // AI response fallback if offline
+        const botMoves = ['✊', '✋', '✌️'];
+        msg.gameData.p2 = { id: 'bot', name: 'Bot_Opponent', move: botMoves[Math.floor(Math.random() * 3)] };
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'rps', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function votePoll(chanId, msgId, optIdx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        if (!msg.pollData.votes) msg.pollData.votes = {};
+        msg.pollData.votes[optIdx] = (msg.pollData.votes[optIdx] || 0) + 1;
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('mutation', { type: 'pollVote', msgId, optIdx });
+        }
+      }
+    }
+
+    function addReaction(chanId, msgId, emoji) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        if (!msg.reactions) msg.reactions = {};
+        msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1;
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('mutation', { type: 'reaction', msgId, emoji });
+        }
+      }
+    }
+
+    function handleIncomingMutation(data) {
+      const chanId = getActiveChannelKey();
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === data.msgId);
+      
+      if (!msg) return;
+
+      if (data.type === 'pollVote') {
+        if (!msg.pollData.votes) msg.pollData.votes = {};
+        msg.pollData.votes[data.optIdx] = (msg.pollData.votes[data.optIdx] || 0) + 1;
+      } else if (data.type === 'wordle') {
+        msg.gameData = data.gameData;
+      } else if (data.type === 'tictactoe') {
+        msg.gameData = data.gameData;
+      } else if (data.type === 'rps') {
+        msg.gameData = data.gameData;
+      } else if (data.type === 'reaction') {
+        if (!msg.reactions) msg.reactions = {};
+        msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1;
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+    }
+
+    function pinMessage(chanId, msgId) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (msg) {
+        msg.isPinned = true;
+        saveState();
+        updatePinnedList();
+      }
+    }
+
+    function updatePinnedList() {
+      const chanId = getActiveChannelKey();
+      const messages = state.messages[chanId] || [];
+      const pinned = messages.filter(m => m.isPinned);
+      
+      const countEl = document.getElementById('pinned-count');
+      if (pinned.length > 0) {
+        countEl.innerText = pinned.length;
+        countEl.classList.remove('hidden');
+      } else {
+        countEl.classList.add('hidden');
+      }
+
+      const listEl = document.getElementById('pinned-messages-list');
+      listEl.innerHTML = pinned.map(m => `
+        <div class="p-2 bg-[#1e1f22] rounded-lg border border-gray-700 text-xs">
+          <span class="font-bold text-indigo-400">${m.user.name}:</span>
+          <p class="text-gray-300 truncate">${m.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function togglePinnedDrawer() {
+      document.getElementById('pinned-drawer').classList.toggle('hidden');
+    }
+
+    // Drag and Drop Upload Handlers
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('drag-overlay').classList.remove('hidden');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('drag-overlay').classList.add('hidden');
+    }
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      document.getElementById('drag-overlay').classList.add('hidden');
+      const file = e.dataTransfer.files[0];
+      if (file) processAndUploadFile(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processAndUploadFile(file);
+    }
+
+    function processAndUploadFile(file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const isVideo = file.type.startsWith('video/');
+        const msg = {
+          msgId: "m_" + Date.now(),
+          user: user,
+          text: `Attached media: ${file.name}`,
+          image: isVideo ? null : event.target.result,
+          video: isVideo ? event.target.result : null,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        sendOrPublish(msg);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function populateMicrophonesAndSpeakers() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const micSelect = document.getElementById('mic-select');
+        const speakerSelect = document.getElementById('speaker-select');
+        
+        micSelect.innerHTML = '<option value="">Default Microphone</option>';
+        speakerSelect.innerHTML = '<option value="">Default Output/Headphones</option>';
+
+        devices.filter(d => d.kind === 'audioinput').forEach(d => {
+          micSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Microphone ' + (micSelect.length)}</option>`;
+        });
+
+        devices.filter(d => d.kind === 'audiooutput').forEach(d => {
+          speakerSelect.innerHTML += `<option value="${d.deviceId}">${d.label || 'Speaker/Headphone ' + (speakerSelect.length)}</option>`;
+        });
+      } catch (e) {}
+    }
+
+    async function changeAudioInput() {
+      const deviceId = document.getElementById('mic-select').value;
+      if (activeMediaStream) {
+        activeMediaStream.getTracks().forEach(track => track.stop());
+      }
+      try {
+        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+      } catch (e) {}
+    }
+
+    async function changeAudioOutput() {
+      const deviceId = document.getElementById('speaker-select').value;
+      const videoEl = document.getElementById('local-video');
+      if (videoEl && typeof videoEl.setSinkId === 'function' && deviceId) {
+        try {
+          await videoEl.setSinkId(deviceId);
+        } catch (e) {}
+      }
+    }
+
+    async function joinVoiceCall() {
+      isVoiceActive = true;
+      document.getElementById('voice-panel').classList.remove('hidden');
+      try {
+        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        const videoEl = document.getElementById('local-video');
+        videoEl.srcObject = activeMediaStream;
+        videoEl.classList.remove('hidden');
+        document.getElementById('local-video-placeholder').classList.add('hidden');
+      } catch (e) {}
+    }
+
+    async function toggleScreenShare() {
+      const screenVideo = document.getElementById('screen-share-video');
+      const screenBtn = document.getElementById('screen-btn');
+
+      if (screenShareStream) {
+        screenShareStream.getTracks().forEach(t => t.stop());
+        screenShareStream = null;
+        screenVideo.classList.add('hidden');
+        document.getElementById('screen-share-placeholder').classList.remove('hidden');
+        screenBtn.classList.remove('bg-indigo-600');
+        return;
+      }
+
+      try {
+        screenShareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        screenVideo.srcObject = screenShareStream;
+        screenVideo.classList.remove('hidden');
+        document.getElementById('screen-share-placeholder').classList.add('hidden');
+        screenBtn.classList.add('bg-indigo-600');
+
+        screenShareStream.getVideoTracks()[0].onended = () => {
+          toggleScreenShare();
+        };
+      } catch (e) {}
+    }
+
+    function leaveVoiceCall() {
+      isVoiceActive = false;
+      document.getElementById('voice-panel').classList.add('hidden');
+      if (activeMediaStream) {
+        activeMediaStream.getTracks().forEach(t => t.stop());
+      }
+      if (screenShareStream) {
+        screenShareStream.getTracks().forEach(t => t.stop());
+      }
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('channels-sidebar').classList.toggle('-translate-x-full');
+    }
+
+    function toggleServerBarVisibility() {
+      document.getElementById('servers-bar').classList.toggle('hidden');
+    }
+
+    function toggleMemberSidebar() {
       document.getElementById('member-sidebar').classList.toggle('hidden');
     }
 
-    function showToast(msg) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'bg-discord-channels border border-black/40 text-discord-textHeader text-xs font-bold px-4 py-2.5 rounded shadow-2xl flex items-center gap-2';
-      toast.innerHTML = `<i class="fa-solid fa-circle-info text-discord-brand"></i> <span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
+    function insertCommand(cmd) {
+      const input = document.getElementById('chat-input');
+      input.value = cmd;
+      input.focus();
+    }
+
+    function playSoundFx(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'airhorn') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'quack') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'levelup') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(261, ctx.currentTime);
+          osc.frequency.setValueAtTime(329, ctx.currentTime + 0.08);
+          osc.frequency.setValueAtTime(392, ctx.currentTime + 0.16);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        }
+      } catch (e) {}
+    }
+
+    function openSoundboardModal() { document.getElementById('soundboard-modal').classList.remove('hidden'); }
+    function closeSoundboardModal() { document.getElementById('soundboard-modal').classList.add('hidden'); }
+
+    function setTheme(theme) {
+      const body = document.getElementById('app-body');
+      body.className = body.className.replace(/theme-\w+/g, '');
+      if (theme !== 'dark') body.classList.add(`theme-${theme}`);
+      localStorage.setItem('sdr_theme', theme);
+      closeThemeModal();
+    }
+
+    function openThemeModal() { document.getElementById('theme-modal').classList.remove('hidden'); }
+    function closeThemeModal() { document.getElementById('theme-modal').classList.add('hidden'); }
+
+    function handleTypingInput() {
+      if (!ably || !currentChannelObj) return;
+      currentChannelObj.publish('typing', { userId: user.id, userName: user.name });
+    }
+
+    function showTypingIndicator(name) {
+      const ind = document.getElementById('typing-indicator');
+      ind.querySelector('span').innerText = `${name} is typing...`;
+      ind.classList.remove('hidden');
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => ind.classList.add('hidden'), 2000);
+    }
+
+    function toggleMuteMic(btn) { btn.classList.toggle('text-red-400'); }
+    function toggleDeafen(btn) { btn.classList.toggle('text-red-400'); }
+
+    function openProfileModal() {
+      document.getElementById('modal-name-input').value = user.name;
+      document.getElementById('modal-avatar-input').value = user.avatar;
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+    function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+    function saveProfile() {
+      user.name = document.getElementById('modal-name-input').value.trim() || user.name;
+      user.avatar = document.getElementById('modal-avatar-input').value.trim() || user.avatar;
+      localStorage.setItem('sdr_name', user.name);
+      localStorage.setItem('sdr_avatar', user.avatar);
+      updateProfileUI();
+      closeProfileModal();
+      if (ably && currentChannelObj) currentChannelObj.presence.update({ name: user.name, avatar: user.avatar, id: user.id });
+    }
+    function updateProfileUI() {
+      document.getElementById('user-name-bottom').innerText = user.name;
+      document.getElementById('user-avatar-bottom').src = user.avatar;
+      document.getElementById('call-avatar-main').src = user.avatar;
+      document.getElementById('call-name-main').innerText = user.name;
+    }
+
+    function openCreateServerModal() { document.getElementById('server-modal').classList.remove('hidden'); }
+    function closeCreateServerModal() { document.getElementById('server-modal').classList.add('hidden'); }
+    function openCreateChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
+    function closeCreateChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
+    function openVideoCallModal() { document.getElementById('video-call-modal').classList.remove('hidden'); }
+    function closeVideoCallModal() { document.getElementById('video-call-modal').classList.add('hidden'); }
+    function toggleCallMic() { document.getElementById('mic-btn').classList.toggle('bg-red-600'); }
+    function toggleCallCam() { document.getElementById('cam-btn').classList.toggle('bg-red-600'); }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
   </script>
 </body>
