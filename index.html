@@ -259,7 +259,7 @@
           <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
         </div>
 
-        <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
+        <form id="chat-form" onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
           <label class="text-gray-400 hover:text-white cursor-pointer text-lg transition" title="Attach Image or Video File">
             <i class="fa-solid fa-circle-plus"></i>
             <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
@@ -492,8 +492,6 @@
     let activeMediaStream = null;
     let screenShareStream = null;
 
-    const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
-
     const DEFAULT_BOT_PEERS = [
       { id: "usr_alex", name: "Alex_Dev", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Alex" },
       { id: "usr_sarah", name: "Sarah_Gamer", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=Sarah" },
@@ -534,6 +532,7 @@
       updateProfileUI();
       renderServers();
       renderChannels();
+      renderMemberList();
       loadMessagesForCurrentChannel();
       initAbly();
       populateMicrophonesAndSpeakers();
@@ -543,7 +542,9 @@
     });
 
     function saveState() {
-      localStorage.setItem('sdr_state', JSON.stringify(state));
+      try {
+        localStorage.setItem('sdr_state', JSON.stringify(state));
+      } catch (e) {}
     }
 
     function getActiveChannelKey() {
@@ -562,7 +563,6 @@
         document.getElementById('api-warning').classList.remove('hidden');
         document.getElementById('connection-status').innerText = "Local Mode";
         document.getElementById('connection-status').className = "bg-purple-500/20 text-purple-400 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30";
-        renderMemberList(DEFAULT_BOT_PEERS.map(b => ({ clientId: b.id, data: b })));
         return;
       }
 
@@ -590,7 +590,6 @@
       const pubSubName = getPubSubChannelName(activeKey);
 
       currentChannelObj = ably.channels.get(pubSubName);
-
       currentChannelObj.subscribe('msg', (msg) => handleIncomingMessage(msg.data, activeKey));
       currentChannelObj.subscribe('mutation', (msg) => handleIncomingMutation(msg.data));
       currentChannelObj.subscribe('typing', (msg) => {
@@ -598,30 +597,25 @@
       });
 
       currentChannelObj.presence.enter({ name: user.name, avatar: user.avatar, id: user.id });
-      currentChannelObj.presence.subscribe(() => updatePresenceMembers());
-      updatePresenceMembers();
+      currentChannelObj.presence.subscribe(() => renderMemberList());
+      renderMemberList();
     }
 
-    function updatePresenceMembers() {
-      if (!currentChannelObj) return;
-      currentChannelObj.presence.get((err, members) => {
-        if (!err) renderMemberList(members);
-      });
-    }
-
-    function renderMemberList(members) {
+    function renderMemberList() {
       const list = document.getElementById('member-list');
       const memberMap = new Map();
-      if (members && members.length) {
-        members.forEach(m => {
-          if (m.data) memberMap.set(m.data.id || m.clientId, m.data);
+
+      if (ably && currentChannelObj) {
+        currentChannelObj.presence.get((err, members) => {
+          if (!err && members) {
+            members.forEach(m => {
+              if (m.data) memberMap.set(m.data.id || m.clientId, m.data);
+            });
+          }
         });
       }
 
-      if (!ably) {
-        DEFAULT_BOT_PEERS.forEach(b => memberMap.set(b.id, b));
-      }
-
+      DEFAULT_BOT_PEERS.forEach(b => memberMap.set(b.id, b));
       document.getElementById('member-count').innerText = memberMap.size || 1;
 
       let html = `
@@ -846,7 +840,6 @@
       `;
 
       let lastUserId = null;
-
       messages.forEach((msg, idx) => {
         const isSequential = lastUserId === msg.user.id;
         lastUserId = msg.user.id;
@@ -926,7 +919,7 @@
         `;
       }
 
-      let content = parseMarkdownHTML(msg.text);
+      let content = parseMarkdownHTML(msg.text || '');
       if (msg.image) {
         content += `<img src="${msg.image}" class="mt-2 max-w-xs rounded-xl border border-gray-700 max-h-60 object-cover shadow-md">`;
       }
@@ -986,8 +979,9 @@
     }
 
     function handleSendMessage(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const input = document.getElementById('chat-input');
+      if (!input) return;
       const text = input.value.trim();
       if (!text) return;
 
