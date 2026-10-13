@@ -1,37 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full dark">
+<html lang="en" class="h-full bg-gray-950 text-gray-100 antialiased selection:bg-indigo-500 selection:text-white">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SDRChat - Anonymous Web Platform</title>
-
-  <!-- iOS / iPad Web App PWA Metadata -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SDRChat — The Ultimate Decentralized Chat</title>
+  
+  <!-- iOS PWA Optimizations -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SDRChat">
-  <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/bottts/svg?seed=SDRChatLogo">
-
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- GunDB Decentralized Realtime P2P Network Library -->
-  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-
-  <!-- Google Fonts: Inter & Fira Code -->
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Ably Realtime SDK -->
+  <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
 
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['Fira Code', 'monospace'],
-          },
           colors: {
             brand: {
               50: '#eef2ff',
@@ -39,6 +29,9 @@
               500: '#6366f1',
               600: '#4f46e5',
               700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              accent: '#10b981'
             }
           }
         }
@@ -47,891 +40,501 @@
   </script>
 
   <style>
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.15);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    /* CSS Themes Variables */
-    .theme-dark {
-      --bg-main: #0f172a;
-      --bg-side: #020617;
-      --bg-panel: #1e293b;
-      --accent: #6366f1;
-    }
-    .theme-oled {
-      --bg-main: #000000;
-      --bg-side: #050505;
-      --bg-panel: #0a0a0a;
-      --accent: #3b82f6;
-    }
-    .theme-cyberpunk {
-      --bg-main: #0d0221;
-      --bg-side: #050014;
-      --bg-panel: #190535;
-      --accent: #00f0ff;
-    }
-    .theme-glass {
-      --bg-main: rgba(15, 23, 42, 0.8);
-      --bg-side: rgba(2, 6, 23, 0.9);
-      --bg-panel: rgba(30, 41, 59, 0.7);
-      --accent: #a855f7;
-    }
-
-    .glass-card {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+    
+    /* Custom Glassmorphism */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .speaking-glow {
-      box-shadow: 0 0 15px rgba(34, 197, 94, 0.7);
-      animation: pulse-ring 1.8s infinite;
+    /* Sound/Audio Visualizer Animation */
+    @keyframes barBounce {
+      0%, 100% { height: 4px; }
+      50% { height: 24px; }
     }
-
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.8); }
-      70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-      100% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0); }
-    }
-
-    /* Audio Visualizer Bars Animation */
-    .v-bar {
-      animation: sound-bar 1.2s ease-in-out infinite alternate;
-    }
-    .v-bar:nth-child(2) { animation-delay: 0.15s; }
-    .v-bar:nth-child(3) { animation-delay: 0.35s; }
+    .v-bar { animation: barBounce 1.2s infinite ease-in-out; }
+    .v-bar:nth-child(2) { animation-delay: 0.2s; }
+    .v-bar:nth-child(3) { animation-delay: 0.4s; }
     .v-bar:nth-child(4) { animation-delay: 0.1s; }
-    .v-bar:nth-child(5) { animation-delay: 0.45s; }
-
-    @keyframes sound-bar {
-      0% { height: 4px; }
-      100% { height: 26px; }
-    }
+    .v-bar:nth-child(5) { animation-delay: 0.5s; }
   </style>
 </head>
-<body class="h-full bg-slate-950 text-slate-100 font-sans antialiased select-none overflow-hidden theme-dark" id="app-body">
+<body class="h-full flex flex-col overflow-hidden bg-gray-950 font-sans antialiased text-gray-200">
 
-  <div id="app" class="flex h-full w-full overflow-hidden relative">
-
-    <!-- 1. LEFTMOST SERVER NAVIGATION SIDEBAR -->
-    <nav class="w-16 md:w-20 bg-slate-950/90 backdrop-blur-md flex flex-col items-center py-3 gap-2 border-r border-slate-800/60 z-30 flex-shrink-0">
-      
-      <!-- SDR Central Server Icon -->
-      <button onclick="switchServer('sdr-main', 'SDR Central Hub')" class="relative group p-0.5 focus:outline-none">
-        <div id="ind-sdr-main" class="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-indigo-500 rounded-r-full transition-all duration-300"></div>
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:rounded-xl transition-all duration-300">
-          <i data-lucide="zap" class="w-6 h-6 fill-current"></i>
-        </div>
-        <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">SDR Central Hub</span>
-      </button>
-
-      <div class="w-8 h-[2px] bg-slate-800/80 rounded my-1"></div>
-
-      <!-- Server Icons List -->
-      <div id="server-list" class="flex-1 w-full space-y-2 overflow-y-auto no-scrollbar flex flex-col items-center">
-        <!-- Gaming Hub -->
-        <button onclick="switchServer('gaming-hub', 'Gaming Hub')" class="relative group focus:outline-none">
-          <div id="ind-gaming-hub" class="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-emerald-500 rounded-r-full transition-all duration-300 group-hover:h-5"></div>
-          <div class="w-12 h-12 rounded-3xl group-hover:rounded-xl bg-slate-800 group-hover:bg-emerald-600 flex items-center justify-center text-slate-300 group-hover:text-white transition-all duration-300 border border-slate-700/50">
-            <i data-lucide="gamepad-2" class="w-6 h-6"></i>
-          </div>
-          <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">Gaming Hub</span>
-        </button>
-
-        <!-- Code & Tech -->
-        <button onclick="switchServer('code-tech', 'Code & Tech')" class="relative group focus:outline-none">
-          <div id="ind-code-tech" class="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-cyan-500 rounded-r-full transition-all duration-300 group-hover:h-5"></div>
-          <div class="w-12 h-12 rounded-3xl group-hover:rounded-xl bg-slate-800 group-hover:bg-cyan-600 flex items-center justify-center text-slate-300 group-hover:text-white transition-all duration-300 border border-slate-700/50">
-            <i data-lucide="code-2" class="w-6 h-6"></i>
-          </div>
-          <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">Code & Tech</span>
-        </button>
-
-        <!-- Music Corner -->
-        <button onclick="switchServer('music-corner', 'Music Corner')" class="relative group focus:outline-none">
-          <div id="ind-music-corner" class="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-0 bg-purple-500 rounded-r-full transition-all duration-300 group-hover:h-5"></div>
-          <div class="w-12 h-12 rounded-3xl group-hover:rounded-xl bg-slate-800 group-hover:bg-purple-600 flex items-center justify-center text-slate-300 group-hover:text-white transition-all duration-300 border border-slate-700/50">
-            <i data-lucide="music" class="w-6 h-6"></i>
-          </div>
-          <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">Music Corner</span>
-        </button>
+  <!-- TOP BAR / HEADER -->
+  <header class="h-14 border-b border-gray-800 bg-gray-900/90 flex items-center justify-between px-4 shrink-0 z-20">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-400 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/20">
+        S
       </div>
+      <div>
+        <h1 class="font-bold text-white text-base leading-tight flex items-center gap-2">
+          SDRChat <span class="bg-indigo-500/20 text-indigo-400 text-xs px-2 py-0.5 rounded-full border border-indigo-500/30">P2P Realtime</span>
+        </h1>
+        <p id="channel-subtitle" class="text-xs text-gray-400">#general — SDR Central</p>
+      </div>
+    </div>
 
-      <!-- Add New Server Button -->
-      <button onclick="openModal('create-server-modal')" class="group relative w-12 h-12 rounded-3xl hover:rounded-xl bg-slate-900/80 hover:bg-emerald-600 text-emerald-500 hover:text-white flex items-center justify-center transition-all duration-300 border border-dashed border-slate-700 hover:border-transparent">
-        <i data-lucide="plus" class="w-6 h-6"></i>
-        <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">Create Server</span>
+    <!-- User Quick Controls & Profile Switcher -->
+    <div class="flex items-center space-x-2">
+      <!-- Audio FX Toggle -->
+      <button id="sound-toggle" onclick="toggleSound()" title="Toggle Sound Effects" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition">
+        <i class="fa-solid fa-volume-high text-indigo-400" id="sound-icon"></i>
       </button>
 
-      <!-- Settings / Theme Button -->
-      <button onclick="openModal('settings-modal')" class="group relative w-12 h-12 rounded-3xl hover:rounded-xl bg-slate-900/80 hover:bg-indigo-600 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-300 border border-slate-800">
-        <i data-lucide="settings" class="w-6 h-6"></i>
-        <span class="absolute left-20 bg-slate-900 text-slate-100 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 border border-slate-800">App Settings</span>
+      <!-- User Profile Badge -->
+      <button onclick="openProfileModal()" class="flex items-center space-x-2 bg-gray-800/80 hover:bg-gray-800 border border-gray-700/50 rounded-full py-1 px-3 transition">
+        <img id="header-user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-6 h-6 rounded-full border border-gray-600">
+        <span id="header-user-name" class="text-xs font-semibold text-gray-200">Anonymous</span>
+        <i class="fa-solid fa-pen text-[10px] text-gray-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- 1. SERVER NAVIGATION (LEFT BAR) -->
+    <nav class="w-16 bg-gray-950 border-r border-gray-800/60 flex flex-col items-center py-3 space-y-3 shrink-0 z-10">
+      <!-- Home Server -->
+      <button onclick="switchServer('sdr-main')" class="relative group w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white hover:rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/30">
+        <i class="fa-solid fa-bolt text-lg"></i>
+        <div class="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
+          SDR Central
+        </div>
       </button>
 
+      <div class="w-8 h-[2px] bg-gray-800 rounded"></div>
+
+      <!-- Server 2: Gaming -->
+      <button onclick="switchServer('gaming')" class="relative group w-11 h-11 rounded-2xl bg-gray-800 hover:bg-emerald-600 flex items-center justify-center text-gray-300 hover:text-white hover:rounded-xl transition-all duration-200">
+        <i class="fa-solid fa-gamepad text-lg"></i>
+        <div class="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
+          Gaming Hub
+        </div>
+      </button>
+
+      <!-- Server 3: Music & Lounge -->
+      <button onclick="switchServer('music')" class="relative group w-11 h-11 rounded-2xl bg-gray-800 hover:bg-purple-600 flex items-center justify-center text-gray-300 hover:text-white hover:rounded-xl transition-all duration-200">
+        <i class="fa-solid fa-headphones text-lg"></i>
+        <div class="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
+          Music & Audio
+        </div>
+      </button>
     </nav>
 
-    <!-- 2. MIDDLE CHANNELS SIDEBAR -->
-    <aside class="w-56 md:w-64 bg-slate-900/90 backdrop-blur-md flex flex-col border-r border-slate-800/60 z-20 flex-shrink-0">
-      
-      <!-- Active Server Header -->
-      <div class="h-14 px-4 border-b border-slate-800/80 flex items-center justify-between font-bold text-slate-100 shadow-sm">
-        <div class="flex items-center gap-2 truncate">
-          <span id="active-server-name" class="truncate font-extrabold tracking-wide text-base">SDR Central Hub</span>
-          <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400 flex-shrink-0"></i>
-        </div>
-        <button onclick="showToast('Server ID: Anonymous GunDB Peer Room')" class="text-slate-500 hover:text-slate-300">
-          <i data-lucide="info" class="w-4 h-4"></i>
-        </button>
+    <!-- 2. CHANNEL LIST & VOICE CONTROLS -->
+    <aside class="w-56 bg-gray-900/60 border-r border-gray-800 flex flex-col shrink-0 hidden md:flex">
+      <div class="p-3 font-bold text-xs uppercase tracking-wider text-gray-400 flex justify-between items-center border-b border-gray-800/40">
+        <span id="current-server-title">SDR Central</span>
+        <i class="fa-solid fa-chevron-down text-[10px]"></i>
       </div>
 
-      <!-- Channels List Scroll Area -->
-      <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
-        
-        <!-- Text Channels Category -->
+      <div class="flex-1 overflow-y-auto p-2 space-y-4">
+        <!-- Text Channels -->
         <div>
-          <div class="flex items-center justify-between px-2 mb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider group">
-            <span class="flex items-center gap-1"><i data-lucide="chevron-down" class="w-3 h-3"></i> Text Channels</span>
-            <i data-lucide="plus" class="w-3.5 h-3.5 hover:text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" onclick="openModal('create-channel-modal')"></i>
-          </div>
-
-          <div id="text-channels-list" class="space-y-0.5">
-            <button onclick="setActiveChannel('general', 'text')" id="chan-general" class="chan-btn w-full flex items-center px-2.5 py-1.5 rounded-lg text-slate-200 bg-indigo-600/20 font-medium text-sm transition-all group">
-              <i data-lucide="hash" class="w-4 h-4 mr-2 text-indigo-400"></i>
-              <span class="truncate">general</span>
-            </button>
-            <button onclick="setActiveChannel('memes', 'text')" id="chan-memes" class="chan-btn w-full flex items-center px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-all group">
-              <i data-lucide="hash" class="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-300"></i>
-              <span class="truncate">memes-and-fun</span>
-            </button>
-            <button onclick="setActiveChannel('tech', 'text')" id="chan-tech" class="chan-btn w-full flex items-center px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-all group">
-              <i data-lucide="hash" class="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-300"></i>
-              <span class="truncate">tech-discussion</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Media Channels Category -->
-        <div>
-          <div class="flex items-center justify-between px-2 mb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider group">
-            <span class="flex items-center gap-1"><i data-lucide="chevron-down" class="w-3 h-3"></i> Media Channels</span>
-          </div>
+          <p class="px-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Text Channels</p>
           <div class="space-y-0.5">
-            <button onclick="setActiveChannel('gallery-art', 'media')" id="chan-gallery-art" class="chan-btn w-full flex items-center px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-all group">
-              <i data-lucide="image" class="w-4 h-4 mr-2 text-amber-400"></i>
-              <span class="truncate">gallery-art</span>
+            <button onclick="switchChannel('general', 'general')" id="chan-general" class="w-full flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-gray-800 text-white font-medium text-sm">
+              <i class="fa-solid fa-hashtag text-gray-400"></i>
+              <span>general</span>
+            </button>
+            <button onclick="switchChannel('tech', 'tech')" id="chan-tech" class="w-full flex items-center space-x-2 px-2 py-1.5 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 text-sm">
+              <i class="fa-solid fa-hashtag text-gray-500"></i>
+              <span>tech-talk</span>
+            </button>
+            <button onclick="switchChannel('memes', 'memes')" id="chan-memes" class="w-full flex items-center space-x-2 px-2 py-1.5 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 text-sm">
+              <i class="fa-solid fa-hashtag text-gray-500"></i>
+              <span>memes</span>
             </button>
           </div>
         </div>
 
-        <!-- Voice Channels Category -->
+        <!-- Voice Channels -->
         <div>
-          <div class="flex items-center justify-between px-2 mb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider group">
-            <span class="flex items-center gap-1"><i data-lucide="chevron-down" class="w-3 h-3"></i> Voice Channels</span>
-          </div>
-          <div class="space-y-0.5">
-            <button onclick="joinVoiceChannel('🔊 Voice Lounge')" class="w-full flex items-center px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800/60 font-medium text-sm transition-all group">
-              <i data-lucide="volume-2" class="w-4 h-4 mr-2 text-slate-500 group-hover:text-emerald-400"></i>
-              <span class="truncate">🔊 Voice Lounge</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Active Voice Connection Bar (Shows when connected to audio room) -->
-      <div id="voice-active-bar" class="hidden bg-emerald-950/70 border-t border-b border-emerald-500/30 px-3 py-2 flex items-center justify-between">
-        <div class="flex items-center gap-2 truncate">
-          <i data-lucide="wifi" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
-          <div class="truncate">
-            <p class="text-xs font-bold text-emerald-400 leading-tight">Voice Room Active</p>
-            <p id="voice-active-room-name" class="text-[10px] text-slate-300 truncate">🔊 Voice Lounge</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-1">
-          <button onclick="openVoiceModal()" class="p-1 hover:bg-emerald-900/60 rounded text-emerald-300" title="Maximize Voice Window">
-            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
-          </button>
-          <button onclick="leaveVoiceChannel()" class="p-1 hover:bg-red-900/60 rounded text-red-400" title="Disconnect">
-            <i data-lucide="phone-off" class="w-3.5 h-3.5"></i>
+          <p class="px-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Voice Lounge</p>
+          <button onclick="toggleVoiceConnect()" id="voice-btn" class="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 text-sm">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-volume-high text-emerald-400"></i>
+              <span>General Voice</span>
+            </div>
+            <span id="voice-badge" class="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">RTC</span>
           </button>
         </div>
       </div>
 
-      <!-- Bottom User Bar (Anonymous Display Name Setup) -->
-      <div class="p-2 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between">
-        <div onclick="openModal('profile-modal')" class="flex items-center gap-2.5 cursor-pointer hover:bg-slate-800/60 p-1.5 rounded-xl transition-colors flex-1 min-w-0" title="Edit Anonymous Profile">
-          <div class="relative flex-shrink-0">
-            <img id="user-bar-avatar" src="" class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/40">
-            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-950 rounded-full"></span>
+      <!-- Voice Connected Status Panel (Hidden by default) -->
+      <div id="voice-status-panel" class="hidden p-3 bg-gray-950 border-t border-emerald-500/30 flex flex-col space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span class="text-xs font-semibold text-emerald-400">Voice Connected</span>
           </div>
-          <div class="truncate leading-tight">
-            <p id="user-bar-name" class="text-xs font-extrabold text-slate-100 truncate">Anonymous</p>
-            <p class="text-[10px] text-indigo-400 font-semibold truncate">Tap to edit name</p>
-          </div>
+          <button onclick="toggleVoiceConnect()" class="text-red-400 hover:text-red-300 text-xs">Disconnect</button>
         </div>
-
-        <div class="flex items-center gap-0.5 text-slate-400">
-          <button onclick="toggleSoundFX()" id="btn-sound" class="p-1.5 hover:text-slate-100 hover:bg-slate-800/60 rounded-md transition-colors" title="Toggle Sound FX">
-            <i data-lucide="volume-2" class="w-4 h-4 text-indigo-400"></i>
-          </button>
-          <button onclick="toggleMute()" id="btn-mute" class="p-1.5 hover:text-slate-100 hover:bg-slate-800/60 rounded-md transition-colors" title="Mute Mic">
-            <i data-lucide="mic" class="w-4 h-4"></i>
-          </button>
+        <!-- Animated Equalizer -->
+        <div class="flex items-end space-x-1 h-6 justify-center bg-gray-900/80 rounded py-1">
+          <div class="v-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="v-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="v-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="v-bar w-1 bg-emerald-400 rounded-full"></div>
+          <div class="v-bar w-1 bg-emerald-400 rounded-full"></div>
         </div>
       </div>
-
     </aside>
 
-    <!-- 3. MAIN CHAT CONTENT DISPLAY -->
-    <main class="flex-1 flex flex-col min-w-0 bg-slate-900/40 relative">
+    <!-- 3. MAIN CHAT AREA -->
+    <main class="flex-1 flex flex-col bg-gray-900/40 relative">
       
-      <!-- Main Channel Header Bar -->
-      <header class="h-14 border-b border-slate-800/80 px-4 flex items-center justify-between backdrop-blur-md bg-slate-900/60 z-10">
-        <div class="flex items-center gap-3 min-w-0">
-          <i data-lucide="hash" class="w-5 h-5 text-indigo-400 flex-shrink-0"></i>
-          <span id="active-channel-title" class="font-extrabold text-slate-100 text-base truncate">general</span>
-          <div class="hidden sm:block h-4 w-[1px] bg-slate-800"></div>
-          <p class="hidden sm:block text-xs text-slate-400 truncate">Anonymous peer-to-peer channel. No records, complete privacy.</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <!-- Voice Call Quick Join -->
-          <button onclick="joinVoiceChannel('🔊 Voice Lounge')" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-all">
-            <i data-lucide="phone" class="w-3.5 h-3.5"></i>
-            <span>Join Voice</span>
-          </button>
-
-          <!-- Toggle Right Member Sidebar -->
-          <button onclick="toggleMemberList()" class="p-2 hover:text-slate-200 hover:bg-slate-800/60 rounded-xl transition-colors text-slate-400" title="Toggle Active Peers">
-            <i data-lucide="users" class="w-5 h-5"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- Message History Container -->
-      <div id="message-feed" class="flex-1 overflow-y-auto p-4 space-y-4">
-        
-        <!-- Welcome Banner -->
-        <div class="my-4 p-5 rounded-2xl glass-card bg-gradient-to-r from-indigo-950/40 via-slate-900 to-purple-950/30 border border-indigo-500/20">
-          <div class="w-10 h-10 rounded-xl bg-indigo-600/30 flex items-center justify-center text-indigo-400 mb-2 border border-indigo-500/30">
-            <i data-lucide="shield" class="w-5 h-5"></i>
-          </div>
-          <h2 id="welcome-title" class="text-xl font-black text-slate-100">Welcome to #general!</h2>
-          <p class="text-xs text-slate-400 mt-1">This room uses decentralized P2P networking via GunDB. Messages broadcast directly to connected peers with no accounts required.</p>
-        </div>
-
-        <div class="flex items-center gap-3 my-2">
-          <div class="h-[1px] flex-1 bg-slate-800"></div>
-          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Realtime Feed</span>
-          <div class="h-[1px] flex-1 bg-slate-800"></div>
-        </div>
-
-        <!-- Dynamic Live Messages inserted here via JavaScript -->
-        <div id="live-messages-container" class="space-y-3"></div>
-
+      <!-- API Missing Warning Banner -->
+      <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Ably API Key missing! Replace <code>YOUR_ABLY_API_KEY_HERE</code> in <code>index.html</code> for live cross-device messaging.</span>
       </div>
 
-      <!-- Chat Input Field Box -->
-      <div class="p-4 pt-0">
-        <!-- Slash Command Menu Overlay -->
-        <div id="slash-menu" class="hidden mb-2 p-2 bg-slate-950/95 border border-indigo-500/30 rounded-2xl shadow-2xl backdrop-blur-md max-h-44 overflow-y-auto">
-          <div class="text-[10px] font-bold text-slate-500 px-2 py-1 uppercase tracking-wider">Slash Commands</div>
-          <div onclick="executeSlashCommand('/roll')" class="flex items-center gap-2 p-2 hover:bg-indigo-600/20 hover:text-indigo-300 text-xs rounded-xl cursor-pointer text-slate-300">
-            <i data-lucide="dices" class="w-4 h-4 text-emerald-400"></i>
-            <div><span class="font-bold">/roll</span> <span class="text-slate-400 text-[11px]">- Roll a d20 dice</span></div>
+      <!-- Messages Stream Container -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Welcome Message -->
+        <div class="border-b border-gray-800 pb-4 mb-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl font-bold mb-2">
+            #
           </div>
-          <div onclick="executeSlashCommand('/poll')" class="flex items-center gap-2 p-2 hover:bg-indigo-600/20 hover:text-indigo-300 text-xs rounded-xl cursor-pointer text-slate-300">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-400"></i>
-            <div><span class="font-bold">/poll</span> <span class="text-slate-400 text-[11px]">- Post a quick voting poll</span></div>
-          </div>
-          <div onclick="executeSlashCommand('/clear')" class="flex items-center gap-2 p-2 hover:bg-indigo-600/20 hover:text-indigo-300 text-xs rounded-xl cursor-pointer text-slate-300">
-            <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i>
-            <div><span class="font-bold">/clear</span> <span class="text-slate-400 text-[11px]">- Clear local screen messages</span></div>
-          </div>
-          <div onclick="executeSlashCommand('/shrug')" class="flex items-center gap-2 p-2 hover:bg-indigo-600/20 hover:text-indigo-300 text-xs rounded-xl cursor-pointer text-slate-300">
-            <i data-lucide="smile" class="w-4 h-4 text-amber-400"></i>
-            <div><span class="font-bold">/shrug</span> <span class="text-slate-400 text-[11px]">- Send ¯\_(ツ)_/¯</span></div>
-          </div>
+          <h2 id="channel-welcome-title" class="text-2xl font-bold text-white">Welcome to #general!</h2>
+          <p class="text-sm text-gray-400">This is the start of the anonymous real-time channel across all connected devices.</p>
         </div>
+      </div>
 
-        <div class="relative bg-slate-950/80 rounded-2xl border border-slate-800 focus-within:border-indigo-500/60 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all p-2 flex flex-col gap-2">
+      <!-- Message Input Box -->
+      <div class="p-3 bg-gray-900/90 border-t border-gray-800">
+        <form onsubmit="handleSend(event)" class="flex items-center space-x-2 bg-gray-800/80 rounded-xl px-3 py-2 border border-gray-700/50 focus-within:border-indigo-500 transition">
+          <button type="button" onclick="insertEmoji('🔥')" class="text-gray-400 hover:text-yellow-400 text-lg transition">
+            <i class="fa-regular fa-face-smile"></i>
+          </button>
           
-          <textarea id="chat-textarea" rows="1" oninput="handleTypingInput(this)" onkeydown="handleKeyDown(event)" placeholder="Message channel... (Type '/' for commands)" class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 resize-none focus:outline-none px-2 max-h-32 overflow-y-auto"></textarea>
-
-          <div class="flex items-center justify-between border-t border-slate-800/60 pt-1.5 px-1">
-            <div class="flex items-center gap-1">
-              <!-- Upload Image attachment -->
-              <button onclick="triggerImageUpload()" class="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="Attach Image">
-                <i data-lucide="paperclip" class="w-4 h-4"></i>
-              </button>
-              <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
-
-              <!-- Emoji Popover Toggle -->
-              <button onclick="toggleEmojiPicker()" class="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors relative" title="Add Emoji">
-                <i data-lucide="smile" class="w-4 h-4"></i>
-              </button>
-            </div>
-
-            <button onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-xl transition-all shadow-md shadow-indigo-600/30 flex items-center justify-center">
-              <i data-lucide="send" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-          <!-- Quick Emoji Tray Popup -->
-          <div id="emoji-tray" class="hidden absolute bottom-16 left-2 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-2xl grid grid-cols-6 gap-2 z-50">
-            <span onclick="appendEmoji('🔥')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🔥</span>
-            <span onclick="appendEmoji('🚀')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🚀</span>
-            <span onclick="appendEmoji('⚡')" class="cursor-pointer hover:scale-125 transition-transform text-xl">⚡</span>
-            <span onclick="appendEmoji('🎉')" class="cursor-pointer hover:scale-125 transition-transform text-xl">🎉</span>
-            <span onclick="appendEmoji('😎')" class="cursor-pointer hover:scale-125 transition-transform text-xl">😎</span>
-            <span onclick="appendEmoji('👍')" class="cursor-pointer hover:scale-125 transition-transform text-xl">👍</span>
-          </div>
-
-        </div>
+          <input id="message-input" type="text" placeholder="Message #general... (Try /roll or /shrug)" autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500">
+          
+          <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/20">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </form>
       </div>
-
     </main>
 
-    <!-- 4. RIGHT MEMBER SIDEBAR -->
-    <aside id="member-sidebar" class="w-56 bg-slate-900/80 backdrop-blur-md border-l border-slate-800/60 p-3 flex flex-col space-y-4 overflow-y-auto hidden md:flex flex-shrink-0">
-      
-      <div>
-        <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Online Peers — <span id="online-count">1</span></h3>
-        <div id="active-peers-list" class="space-y-1">
-          <!-- Local User item populated on load -->
-        </div>
+    <!-- 4. ACTIVE MEMBERS (RIGHT BAR) -->
+    <aside class="w-48 bg-gray-950/60 border-l border-gray-800/60 p-3 hidden lg:block shrink-0">
+      <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Online Peers</h3>
+      <div id="member-list" class="space-y-2">
+        <!-- Dynamically populated online members -->
       </div>
-
     </aside>
 
   </div>
 
-  <!-- MODAL 1: ANONYMOUS PROFILE INITIALIZER SETUP -->
-  <div id="profile-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-2xl bg-indigo-600/30 flex items-center justify-center text-indigo-400 border border-indigo-500/30">
-          <i data-lucide="user-check" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <h3 class="text-lg font-bold text-white">Choose Your Identity</h3>
-          <p class="text-xs text-slate-400">No email or password needed. Chat anonymously!</p>
-        </div>
-      </div>
-
+  <!-- PROFILE EDIT MODAL -->
+  <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="glass-panel w-full max-w-sm rounded-2xl p-5 border border-gray-700 shadow-2xl">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+        <i class="fa-solid fa-user-gear text-indigo-400"></i>
+        <span>Customize Anonymous Identity</span>
+      </h3>
+      
       <div class="space-y-4">
         <div>
-          <label class="text-xs font-bold text-slate-300 uppercase mb-1 block">Display Name</label>
-          <input type="text" id="input-display-name" placeholder="e.g. CyberPioneer99" class="w-full bg-slate-950 text-sm text-slate-100 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 font-semibold">
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Display Name</label>
+          <input id="modal-name-input" type="text" maxlength="20" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <div>
-          <label class="text-xs font-bold text-slate-300 uppercase mb-1 block">Avatar Style Preset</label>
-          <div class="grid grid-cols-4 gap-2 mb-3">
-            <button onclick="setAvatarPreset('bottts')" class="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500 flex flex-col items-center">
-              <img src="https://api.dicebear.com/7.x/bottts/svg?seed=preview1" class="w-8 h-8 rounded-full mb-1">
-              <span class="text-[10px] text-slate-400 font-bold">Robots</span>
-            </button>
-            <button onclick="setAvatarPreset('adventurer')" class="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500 flex flex-col items-center">
-              <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=preview2" class="w-8 h-8 rounded-full mb-1">
-              <span class="text-[10px] text-slate-400 font-bold">Humans</span>
-            </button>
-            <button onclick="setAvatarPreset('identicon')" class="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500 flex flex-col items-center">
-              <img src="https://api.dicebear.com/7.x/identicon/svg?seed=preview3" class="w-8 h-8 rounded-full mb-1">
-              <span class="text-[10px] text-slate-400 font-bold">Matrix</span>
-            </button>
-            <button onclick="randomizeAvatarSeed()" class="p-2 rounded-xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 flex flex-col items-center justify-center">
-              <i data-lucide="dice-5" class="w-6 h-6 my-1"></i>
-              <span class="text-[10px] font-bold">Random</span>
-            </button>
-          </div>
+          <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Custom Avatar URL (Optional)</label>
+          <input id="modal-avatar-input" type="text" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
-        <div>
-          <label class="text-xs font-bold text-slate-300 uppercase mb-1 block">Custom Avatar Image URL (Optional)</label>
-          <input type="text" id="input-custom-avatar" placeholder="https://..." class="w-full bg-slate-950 text-xs text-slate-200 p-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500">
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg transition">Cancel</button>
+          <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition">Save Profile</button>
         </div>
-      </div>
-
-      <div class="mt-6 flex justify-end">
-        <button onclick="saveAnonymousProfile()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all text-sm">Save Identity & Enter</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: VOICE CHANNEL ACTIVE ROOM OVERLAY -->
-  <div id="voice-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex-col justify-between p-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-          <i data-lucide="radio" class="w-6 h-6 animate-pulse"></i>
-        </div>
-        <div>
-          <h3 id="modal-voice-title" class="text-lg font-extrabold text-white">🔊 Voice Lounge</h3>
-          <p class="text-xs text-emerald-400 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Audio Room Active
-          </p>
-        </div>
-      </div>
-      <button onclick="closeVoiceModal()" class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800">
-        <i data-lucide="minimize-2" class="w-6 h-6"></i>
-      </button>
-    </div>
-
-    <!-- Active Speaker Audio Visualizer Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto w-full my-auto">
-      <div class="bg-slate-900/90 rounded-3xl border border-slate-800 p-6 flex flex-col items-center justify-center relative shadow-2xl">
-        <div class="relative mb-3">
-          <img id="voice-user-avatar" src="" class="w-20 h-20 rounded-full object-cover speaking-glow border-2 border-emerald-500">
-          <span class="absolute bottom-0 right-0 bg-emerald-500 text-slate-950 p-1 rounded-full"><i data-lucide="mic" class="w-3.5 h-3.5"></i></span>
-        </div>
-        <p id="voice-user-name" class="font-bold text-slate-100 text-sm">Anonymous</p>
-        <!-- Animated Equalizer Bars -->
-        <div class="flex items-end gap-1 h-7 mt-3">
-          <div class="w-1.5 bg-emerald-400 rounded-full v-bar"></div>
-          <div class="w-1.5 bg-emerald-400 rounded-full v-bar"></div>
-          <div class="w-1.5 bg-emerald-400 rounded-full v-bar"></div>
-          <div class="w-1.5 bg-emerald-400 rounded-full v-bar"></div>
-          <div class="w-1.5 bg-emerald-400 rounded-full v-bar"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Voice Control Toolbar -->
-    <div class="flex items-center justify-center gap-4 bg-slate-900/90 max-w-sm mx-auto p-3 rounded-2xl border border-slate-800 shadow-2xl">
-      <button onclick="toggleMute()" class="p-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all">
-        <i data-lucide="mic" class="w-5 h-5"></i>
-      </button>
-      <button onclick="leaveVoiceChannel()" class="p-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all shadow-lg shadow-red-600/30">
-        <i data-lucide="phone-off" class="w-5 h-5"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- MODAL 3: SETTINGS MODAL -->
-  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-bold text-white">Application Theme Options</h3>
-        <button onclick="closeModal('settings-modal')" class="p-1 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <button onclick="setAppTheme('theme-dark')" class="p-3.5 rounded-2xl border border-indigo-500/50 bg-slate-950 text-left text-xs font-bold text-slate-200 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-indigo-500"></span> Slate Dark (Default)
-        </button>
-        <button onclick="setAppTheme('theme-oled')" class="p-3.5 rounded-2xl border border-slate-800 bg-black text-left text-xs font-bold text-slate-200 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-blue-500"></span> Pitch Black OLED
-        </button>
-        <button onclick="setAppTheme('theme-cyberpunk')" class="p-3.5 rounded-2xl border border-slate-800 bg-purple-950 text-left text-xs font-bold text-cyan-300 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-cyan-400"></span> Cyberpunk Neon
-        </button>
-        <button onclick="setAppTheme('theme-glass')" class="p-3.5 rounded-2xl border border-slate-800 bg-slate-900/60 text-left text-xs font-bold text-purple-300 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-purple-500"></span> Glassmorphism
-        </button>
-      </div>
-
-      <div class="flex justify-end">
-        <button onclick="closeModal('settings-modal')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 4: CREATE SERVER MODAL -->
-  <div id="create-server-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-white mb-2">Create Server</h3>
-      <p class="text-xs text-slate-400 mb-4">Add a new room category for your peers.</p>
-      
-      <input type="text" id="input-server-name" placeholder="Server Name (e.g. Developer Den)" class="w-full bg-slate-950 text-sm text-slate-100 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 mb-4">
-
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal('create-server-modal')" class="text-xs text-slate-400 hover:text-white px-3 py-2">Cancel</button>
-        <button onclick="createNewServer()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Create</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
+  <!-- JAVASCRIPT & ABLY REALTIME ENGINE -->
   <script>
-    // Local Identity State
-    let userProfile = {
-      name: 'Guest' + Math.floor(Math.random() * 899 + 100),
-      avatarPreset: 'bottts',
-      avatarSeed: 'User' + Math.floor(Math.random() * 1000),
-      customAvatar: ''
+    // =========================================================================
+    // ⚙️ 1. PASTE YOUR ABLY API KEY BELOW
+    // =========================================================================
+    const ABLY_API_KEY = "P-x9Xw.2O-Uiw:mGxpHZynD8v6ZcsTSbOs1OBwntMAtW_dcTgvTB8aUos";
+    // =========================================================================
+
+    let ablyClient = null;
+    let chatChannel = null;
+    let currentChannelName = "general";
+    let isSoundEnabled = true;
+    let isVoiceConnected = false;
+
+    // Local Profile Storage
+    let currentUser = {
+      id: "usr_" + Math.random().toString(36).substring(2, 9),
+      name: localStorage.getItem('sdr_username') || "User_" + Math.floor(1000 + Math.random() * 9000),
+      avatar: localStorage.getItem('sdr_avatar') || `https://api.dicebear.com/7.x/bottts/svg?seed=${Math.random()}`
     };
 
-    let activeServer = 'sdr-main';
-    let activeChannel = 'general';
-    let soundEnabled = true;
-    let isMuted = false;
-
-    // Web Audio Synthesizer Engine (Sound FX without external MP3 files)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSound(type) {
-      if (!soundEnabled) return;
+    // Synthesized Sound Effects
+    function playAudioFx(type) {
+      if (!isSoundEnabled) return;
       try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
 
         if (type === 'send') {
-          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
           osc.start();
-          osc.stop(audioCtx.currentTime + 0.1);
+          osc.stop(ctx.currentTime + 0.1);
         } else if (type === 'receive') {
-          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
           osc.start();
-          osc.stop(audioCtx.currentTime + 0.15);
+          osc.stop(ctx.currentTime + 0.15);
         }
-      } catch(e){}
-    }
-
-    // Initialize GunDB P2P Network
-    const gun = Gun([
-      'https://gun-manhattan.herokuapp.com/gun',
-      'https://peer.wallrpc.com/gun'
-    ]);
-
-    // DOM Ready Initializer
-    window.onload = function() {
-      lucide.createIcons();
-      loadProfileFromStorage();
-      subscribeToChannel(activeServer, activeChannel);
-    };
-
-    // Load or initialize anonymous profile
-    function loadProfileFromStorage() {
-      const saved = localStorage.getItem('sdr_user_profile');
-      if (saved) {
-        userProfile = JSON.parse(saved);
-        closeModal('profile-modal');
-      } else {
-        openModal('profile-modal');
+      } catch (e) {
+        console.log("Audio not allowed yet");
       }
-      updateProfileUI();
     }
 
-    function updateProfileUI() {
-      const avatarUrl = getAvatarUrl(userProfile);
-      document.getElementById('user-bar-avatar').src = avatarUrl;
-      document.getElementById('user-bar-name').innerText = userProfile.name;
-      document.getElementById('voice-user-avatar').src = avatarUrl;
-      document.getElementById('voice-user-name').innerText = userProfile.name;
-
-      // Update right sidebar active peers list
-      const peersList = document.getElementById('active-peers-list');
-      peersList.innerHTML = `
-        <div class="flex items-center gap-2 p-1.5 rounded-xl bg-slate-800/40">
-          <img src="${avatarUrl}" class="w-7 h-7 rounded-full object-cover">
-          <div class="truncate">
-            <p class="text-xs font-bold text-indigo-300 truncate">${userProfile.name} (You)</p>
-            <p class="text-[10px] text-slate-500">Active Peer</p>
-          </div>
-        </div>
-      `;
+    function toggleSound() {
+      isSoundEnabled = !isSoundEnabled;
+      const soundIcon = document.getElementById('sound-icon');
+      soundIcon.className = isSoundEnabled ? "fa-solid fa-volume-high text-indigo-400" : "fa-solid fa-volume-xmark text-gray-500";
     }
 
-    function getAvatarUrl(prof) {
-      if (prof.customAvatar) return prof.customAvatar;
-      return `https://api.dicebear.com/7.x/${prof.avatarPreset}/svg?seed=${prof.avatarSeed}`;
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      updateHeaderProfileUI();
+      initAblyConnection();
+      renderMemberBadge(currentUser.name, currentUser.avatar);
+    });
+
+    function updateHeaderProfileUI() {
+      document.getElementById('header-user-name').innerText = currentUser.name;
+      document.getElementById('header-user-avatar').src = currentUser.avatar;
     }
 
-    function saveAnonymousProfile() {
-      const nameInput = document.getElementById('input-display-name').value.trim();
-      const customInput = document.getElementById('input-custom-avatar').value.trim();
+    // Ably Connection Setup
+    function initAblyConnection() {
+      if (!ABLY_API_KEY || ABLY_API_KEY === "YOUR_ABLY_API_KEY_HERE") {
+        document.getElementById('api-warning').classList.remove('hidden');
+        console.warn("Please enter your Ably API key at the top of the JavaScript section.");
+        return;
+      }
 
-      if (nameInput) userProfile.name = nameInput;
-      if (customInput) userProfile.customAvatar = customInput;
-
-      localStorage.setItem('sdr_user_profile', JSON.stringify(userProfile));
-      updateProfileUI();
-      closeModal('profile-modal');
-      showToast(`Identity saved as: ${userProfile.name}`);
+      try {
+        ablyClient = new Ably.Realtime({ key: ABLY_API_KEY, clientId: currentUser.id });
+        
+        ablyClient.connection.on('connected', () => {
+          console.log("Connected to Ably Realtime!");
+          connectToChannel(currentChannelName);
+        });
+      } catch (err) {
+        console.error("Failed to connect to Ably:", err);
+      }
     }
 
-    function setAvatarPreset(preset) {
-      userProfile.avatarPreset = preset;
-      userProfile.customAvatar = '';
-      showToast(`Preset updated: ${preset}`);
-    }
+    function connectToChannel(chanName) {
+      if (!ablyClient) return;
 
-    function randomizeAvatarSeed() {
-      userProfile.avatarSeed = 'Seed' + Math.floor(Math.random() * 9999);
-      showToast('Avatar randomized!');
-    }
+      if (chatChannel) {
+        chatChannel.unsubscribe();
+      }
 
-    // P2P Channel Messenger Subscriptions
-    let channelRef = null;
-
-    function subscribeToChannel(server, channel) {
-      const container = document.getElementById('live-messages-container');
-      container.innerHTML = '';
-
-      // GunDB node room path
-      const roomKey = `sdrchat_v1_${server}_${channel}`;
+      chatChannel = ablyClient.channels.get(`sdrchat-${chanName}`);
       
-      if (channelRef) channelRef.off();
-      
-      channelRef = gun.get(roomKey);
-      
-      channelRef.map().once((data) => {
-        if (data && data.content && data.user) {
-          renderMessageItem(data);
+      // Subscribe to live incoming messages
+      chatChannel.subscribe('msg', (data) => {
+        const payload = data.data;
+        displayIncomingMessage(payload);
+        if (payload.user.id !== currentUser.id) {
+          playAudioFx('receive');
         }
+      });
+
+      // Presence Tracking
+      chatChannel.presence.enter({ name: currentUser.name, avatar: currentUser.avatar });
+      chatChannel.presence.subscribe(() => {
+        updateMemberList();
       });
     }
 
-    function sendChatMessage() {
-      const textarea = document.getElementById('chat-textarea');
-      const text = textarea.value.trim();
+    function updateMemberList() {
+      if (!chatChannel) return;
+      chatChannel.presence.get((err, members) => {
+        if (err) return;
+        const memberListEl = document.getElementById('member-list');
+        memberListEl.innerHTML = '';
+        members.forEach(m => {
+          const data = m.data || {};
+          renderMemberBadge(data.name || "Anonymous", data.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=Peer");
+        });
+      });
+    }
+
+    function renderMemberBadge(name, avatar) {
+      const memberListEl = document.getElementById('member-list');
+      const badgeHTML = `
+        <div class="flex items-center space-x-2 px-2 py-1.5 rounded-lg bg-gray-900/80 border border-gray-800">
+          <div class="relative">
+            <img src="${avatar}" class="w-6 h-6 rounded-full border border-gray-700">
+            <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-gray-950"></span>
+          </div>
+          <span class="text-xs font-medium text-gray-300 truncate">${name}</span>
+        </div>
+      `;
+      memberListEl.insertAdjacentHTML('beforeend', badgeHTML);
+    }
+
+    // Send Message Handler
+    function handleSend(e) {
+      e.preventDefault();
+      const inputEl = document.getElementById('message-input');
+      let text = inputEl.value.trim();
       if (!text) return;
 
       // Handle Slash Commands
-      if (text.startsWith('/roll')) {
-        const roll = Math.floor(Math.random() * 20) + 1;
-        broadcastMessage(`🎲 Rolled a d20: **${roll}**!`);
-      } else if (text.startsWith('/poll')) {
-        broadcastMessage(`📊 **Poll:** ${text.replace('/poll', '')}`);
-      } else if (text.startsWith('/clear')) {
-        document.getElementById('live-messages-container').innerHTML = '';
-        showToast('Screen cleared!');
-      } else if (text.startsWith('/shrug')) {
-        broadcastMessage('¯\\_(ツ)_/¯');
-      } else {
-        broadcastMessage(text);
+      if (text.startsWith('/')) {
+        handleSlashCommand(text);
+        inputEl.value = '';
+        return;
       }
 
-      textarea.value = '';
-      document.getElementById('slash-menu').classList.add('hidden');
-      playSound('send');
-    }
-
-    function broadcastMessage(contentStr, isMedia = false) {
-      const msgObj = {
-        id: 'msg_' + Date.now() + '_' + Math.random(),
-        user: userProfile.name,
-        avatar: getAvatarUrl(userProfile),
-        content: contentStr,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isMedia: isMedia
+      const payload = {
+        user: currentUser,
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      const roomKey = `sdrchat_v1_${activeServer}_${activeChannel}`;
-      gun.get(roomKey).get(msgObj.id).put(msgObj);
-
-      // Instant local feedback rendering
-      renderMessageItem(msgObj);
-    }
-
-    function renderMessageItem(data) {
-      const container = document.getElementById('live-messages-container');
-      if (document.getElementById(data.id)) return; // Prevent duplicates
-
-      const msgNode = document.createElement('div');
-      msgNode.id = data.id;
-      msgNode.className = "group flex gap-3 hover:bg-slate-800/20 p-2 rounded-xl transition-colors relative";
-
-      let bodyHtml = `<p class="text-sm text-slate-200 mt-0.5 leading-relaxed">${escapeHtml(data.content)}</p>`;
-      if (data.isMedia) {
-        bodyHtml = `<img src="${data.content}" class="mt-2 rounded-xl max-w-xs max-h-60 object-cover border border-slate-800 shadow-md">`;
-      }
-
-      msgNode.innerHTML = `
-        <img src="${data.avatar}" class="w-9 h-9 rounded-full object-cover">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-xs text-slate-100">${escapeHtml(data.user)}</span>
-            <span class="text-[10px] text-slate-500">${data.timestamp || ''}</span>
-          </div>
-          ${bodyHtml}
-        </div>
-      `;
-
-      container.appendChild(msgNode);
-      const feed = document.getElementById('message-feed');
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    // Server & Channel Handlers
-    function switchServer(serverId, name) {
-      activeServer = serverId;
-      document.getElementById('active-server-name').innerText = name;
-      showToast(`Switched server: ${name}`);
-      subscribeToChannel(activeServer, activeChannel);
-    }
-
-    function setActiveChannel(chanName, type) {
-      activeChannel = chanName;
-      document.getElementById('active-channel-title').innerText = chanName;
-      document.getElementById('welcome-title').innerText = `Welcome to #${chanName}!`;
-
-      document.querySelectorAll('.chan-btn').forEach(b => b.classList.remove('bg-indigo-600/20', 'text-indigo-200'));
-      const activeBtn = document.getElementById(`chan-${chanName}`);
-      if (activeBtn) activeBtn.classList.add('bg-indigo-600/20', 'text-indigo-200');
-
-      subscribeToChannel(activeServer, activeChannel);
-    }
-
-    // Voice Room Call Handlers
-    function joinVoiceChannel(name) {
-      document.getElementById('voice-active-bar').classList.remove('hidden');
-      document.getElementById('voice-active-room-name').innerText = name;
-      document.getElementById('modal-voice-title').innerText = name;
-      showToast(`Connected to ${name}`);
-    }
-
-    function leaveVoiceChannel() {
-      document.getElementById('voice-active-bar').classList.add('hidden');
-      closeVoiceModal();
-      showToast('Disconnected from Voice Channel');
-    }
-
-    function openVoiceModal() {
-      openModal('voice-modal');
-    }
-
-    function closeVoiceModal() {
-      closeModal('voice-modal');
-    }
-
-    // Utility UI Controls
-    function toggleMute() {
-      isMuted = !isMuted;
-      document.getElementById('btn-mute').classList.toggle('text-red-400', isMuted);
-      showToast(isMuted ? 'Mic Muted' : 'Mic Unmuted');
-    }
-
-    function toggleSoundFX() {
-      soundEnabled = !soundEnabled;
-      document.getElementById('btn-sound').classList.toggle('text-slate-600', !soundEnabled);
-      showToast(soundEnabled ? 'Sound FX Enabled' : 'Sound FX Disabled');
-    }
-
-    function handleTypingInput(elem) {
-      const slashMenu = document.getElementById('slash-menu');
-      if (elem.value.startsWith('/')) {
-        slashMenu.classList.remove('hidden');
+      if (chatChannel) {
+        chatChannel.publish('msg', payload);
+        playAudioFx('send');
       } else {
-        slashMenu.classList.add('hidden');
+        // Fallback display if API key isn't provided
+        displayIncomingMessage(payload);
       }
+
+      inputEl.value = '';
     }
 
-    function handleKeyDown(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendChatMessage();
+    function handleSlashCommand(cmd) {
+      let responseText = "";
+      if (cmd === '/shrug') {
+        responseText = "¯\\_(ツ)_/¯";
+      } else if (cmd === '/roll') {
+        const roll = Math.floor(Math.random() * 100) + 1;
+        responseText = `🎲 Rolled a **${roll}** (1-100)`;
+      } else if (cmd === '/clear') {
+        document.getElementById('chat-messages').innerHTML = '';
+        return;
+      } else {
+        responseText = "Available commands: `/shrug`, `/roll`, `/clear`";
       }
+
+      const payload = {
+        user: { name: "SDRBot", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=SDRBot" },
+        text: responseText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      displayIncomingMessage(payload);
     }
 
-    function executeSlashCommand(cmd) {
-      document.getElementById('chat-textarea').value = cmd + ' ';
-      document.getElementById('slash-menu').classList.add('hidden');
-      document.getElementById('chat-textarea').focus();
-    }
-
-    function toggleEmojiPicker() {
-      document.getElementById('emoji-tray').classList.toggle('hidden');
-    }
-
-    function appendEmoji(e) {
-      document.getElementById('chat-textarea').value += e;
-      document.getElementById('emoji-tray').classList.add('hidden');
-    }
-
-    function triggerImageUpload() {
-      document.getElementById('file-input').click();
-    }
-
-    function handleImageSelected(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          broadcastMessage(evt.target.result, true);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    function setAppTheme(themeClass) {
-      document.getElementById('app-body').className = `h-full bg-slate-950 text-slate-100 font-sans antialiased select-none overflow-hidden ${themeClass}`;
-      showToast('Theme updated');
-    }
-
-    function openModal(id) {
-      const m = document.getElementById(id);
-      if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
-    }
-
-    function closeModal(id) {
-      const m = document.getElementById(id);
-      if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
-    }
-
-    function toggleMemberList() {
-      document.getElementById('member-sidebar').classList.toggle('hidden');
-    }
-
-    function createNewServer() {
-      const name = document.getElementById('input-server-name').value.trim();
-      if (!name) return;
-
-      const serverList = document.getElementById('server-list');
-      const id = 'server_' + Date.now();
-      
-      const btn = document.createElement('button');
-      btn.onclick = () => switchServer(id, name);
-      btn.className = "relative group focus:outline-none";
-      btn.innerHTML = `
-        <div class="w-12 h-12 rounded-3xl group-hover:rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold transition-all duration-300">
-          ${name.substring(0, 2).toUpperCase()}
+    function displayIncomingMessage(payload) {
+      const container = document.getElementById('chat-messages');
+      const msgHTML = `
+        <div class="flex items-start space-x-3 my-3 group">
+          <img src="${payload.user.avatar}" class="w-9 h-9 rounded-full border border-gray-700 bg-gray-800 shrink-0">
+          <div class="flex-1 overflow-hidden">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-xs text-indigo-400">${payload.user.name}</span>
+              <span class="text-[10px] text-gray-500">${payload.time}</span>
+            </div>
+            <p class="text-sm text-gray-200 mt-0.5 whitespace-pre-wrap">${escapeHTML(payload.text)}</p>
+          </div>
         </div>
       `;
-      serverList.appendChild(btn);
-      closeModal('create-server-modal');
-      showToast(`Server '${name}' Created!`);
+      container.insertAdjacentHTML('beforeend', msgHTML);
+      container.scrollTop = container.scrollHeight;
     }
 
-    function showToast(msg) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = 'bg-slate-900 border border-indigo-500/40 text-slate-100 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 pointer-events-auto animate-in slide-in-from-bottom duration-200';
-      toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-indigo-400"></i> <span>${msg}</span>`;
-      container.appendChild(toast);
-      lucide.createIcons();
-      setTimeout(() => toast.remove(), 2500);
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function switchChannel(name, label) {
+      currentChannelName = name;
+      document.getElementById('channel-subtitle').innerText = `#${label} — SDR Central`;
+      document.getElementById('channel-welcome-title').innerText = `Welcome to #${label}!`;
+      document.getElementById('chat-messages').innerHTML = '';
+      connectToChannel(name);
+    }
+
+    function toggleVoiceConnect() {
+      isVoiceConnected = !isVoiceConnected;
+      const voicePanel = document.getElementById('voice-status-panel');
+      if (isVoiceConnected) {
+        voicePanel.classList.remove('hidden');
+        playAudioFx('send');
+      } else {
+        voicePanel.classList.add('hidden');
+        playAudioFx('receive');
+      }
+    }
+
+    // Profile Modal
+    function openProfileModal() {
+      document.getElementById('modal-name-input').value = currentUser.name;
+      document.getElementById('modal-avatar-input').value = currentUser.avatar;
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    function saveProfile() {
+      const newName = document.getElementById('modal-name-input').value.trim();
+      const newAvatar = document.getElementById('modal-avatar-input').value.trim();
+
+      if (newName) currentUser.name = newName;
+      if (newAvatar) currentUser.avatar = newAvatar;
+
+      localStorage.setItem('sdr_username', currentUser.name);
+      localStorage.setItem('sdr_avatar', currentUser.avatar);
+
+      updateHeaderProfileUI();
+      closeProfileModal();
+
+      if (chatChannel) {
+        chatChannel.presence.update({ name: currentUser.name, avatar: currentUser.avatar });
+      }
+    }
+
+    function insertEmoji(emoji) {
+      const inputEl = document.getElementById('message-input');
+      inputEl.value += emoji;
+      inputEl.focus();
     }
   </script>
 </body>
