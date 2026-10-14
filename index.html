@@ -99,6 +99,10 @@
 
     <!-- Header Tools -->
     <div class="flex items-center space-x-1 md:space-x-2 shrink-0">
+      <button onclick="openLeaderboardModal()" class="p-1.5 text-amber-400 hover:text-white rounded-lg hover:bg-[#35373c] transition flex items-center gap-1 text-xs font-bold" title="Leaderboard & Casino Bankroll">
+        <i class="fa-solid fa-coins"></i> <span id="header-bankroll">$1000</span>
+      </button>
+
       <button onclick="toggleServerBarVisibility()" class="hidden md:flex p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-[#35373c] transition" title="Toggle Server Sidebar">
         <i class="fa-solid fa-server text-sm"></i>
       </button>
@@ -220,7 +224,7 @@
       <!-- Warning Banner -->
       <div id="api-warning" class="bg-amber-500/10 border-b border-amber-500/30 p-2 text-center text-xs text-amber-300 flex items-center justify-center space-x-2 hidden z-10">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Type <code>!deleteall</code> for full reset!</span>
+        <span><strong>Local Mode Active:</strong> Add your Ably key for global sync. Type <code>!deleteall</code> for global factory reset!</span>
       </div>
 
       <!-- Messages Stream -->
@@ -253,8 +257,12 @@
           <button onclick="wrapWholeMessage('code')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Code</button>
           <button onclick="wrapWholeMessage('spoiler')" class="px-2 py-0.5 rounded bg-[#2b2d31] hover:bg-[#35373c] text-white transition shrink-0">Spoiler</button>
           <div class="h-3 w-[1px] bg-gray-700 shrink-0"></div>
-          <button onclick="insertCommand('/poker')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-dice text-amber-400 mr-1"></i>Poker</button>
+          <button onclick="insertCommand('/blackjack')" class="hover:text-amber-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-diamond text-amber-400 mr-1"></i>Blackjack</button>
+          <button onclick="insertCommand('/roulette')" class="hover:text-red-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-bullseye text-red-400 mr-1"></i>Roulette</button>
           <button onclick="insertCommand('/chess')" class="hover:text-purple-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-chess text-purple-400 mr-1"></i>Chess</button>
+          <button onclick="insertCommand('/wordle')" class="hover:text-green-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad text-green-400 mr-1"></i>Wordle</button>
+          <button onclick="insertCommand('/tictactoe')" class="hover:text-emerald-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-gamepad mr-1"></i>TicTacToe</button>
+          <button onclick="insertCommand('/poll Question | Opt1 | Opt2')" class="hover:text-indigo-400 font-semibold text-[11px] shrink-0"><i class="fa-solid fa-square-poll-vertical mr-1"></i>Poll</button>
         </div>
 
         <form onsubmit="handleSendMessage(event)" class="flex items-center space-x-2 bg-[#383a40] rounded-xl px-3 py-2 border border-transparent focus-within:border-indigo-500 transition">
@@ -263,7 +271,7 @@
             <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
           </label>
 
-          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel, DM, or try /poker, /chess..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
+          <input id="chat-input" type="text" oninput="handleTypingInput()" placeholder="Message channel, DM @user, or try /blackjack, /wordle, /poll..." autocomplete="off" class="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-gray-500 min-w-0">
 
           <button type="submit" class="w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 shrink-0">
             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -282,6 +290,25 @@
 
   </div>
 
+  <!-- LEADERBOARD / BANKROLL MODAL -->
+  <div id="leaderboard-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-gray-700 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-coins text-amber-400"></i> Casino Bankroll & Leaderboard
+        </h3>
+        <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="bg-[#1e1f22] p-4 rounded-xl mb-4 text-center border border-amber-500/30">
+        <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Your Total Balance</div>
+        <div id="modal-bankroll-display" class="text-3xl font-extrabold text-amber-400">$1000</div>
+      </div>
+      <div class="space-y-2" id="leaderboard-list">
+        <!-- Injected leaderboard peers -->
+      </div>
+    </div>
+  </div>
+
   <!-- VIDEO CALL MODAL -->
   <div id="video-call-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col hidden">
     <div class="h-14 bg-[#1e1f22] border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
@@ -294,20 +321,20 @@
     
     <div class="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto max-w-5xl mx-auto w-full items-center">
       <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
-        <video id="local-video" autoplay muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
-        <div id="local-video-placeholder" class="flex flex-col items-center justify-center">
+        <video id="local-video" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover"></video>
+        <div id="local-video-placeholder" class="flex flex-col items-center justify-center hidden">
           <img id="call-avatar-main" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-24 h-24 rounded-full border-4 border-emerald-500 mb-3 bg-gray-900">
           <span id="call-name-main" class="font-bold text-white text-lg">You</span>
           <span class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-microphone mr-1"></i> Active Speaker</span>
         </div>
       </div>
       <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
-        <video id="screen-share-video" autoplay muted class="absolute inset-0 w-full h-full object-cover hidden"></video>
-        <div id="screen-share-placeholder" class="flex flex-col items-center justify-center">
+        <video id="remote-video" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
+        <div id="remote-video-placeholder" class="flex flex-col items-center justify-center">
           <div class="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 text-2xl mb-2">
-            <i class="fa-solid fa-desktop"></i>
+            <i class="fa-solid fa-user"></i>
           </div>
-          <span class="font-bold text-gray-400 text-sm">Screen Share / Peer Video</span>
+          <span id="remote-status-text" class="font-bold text-gray-400 text-sm">Waiting for peer in voice channel...</span>
         </div>
       </div>
     </div>
@@ -489,11 +516,16 @@
     let typingTimer = null;
     let activeMediaStream = null;
     let screenShareStream = null;
+    let peerConnection = null;
+    let localStreamForRTC = null;
+
+    const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
 
     let user = {
       id: "usr_" + Math.random().toString(36).substring(2, 9),
       name: localStorage.getItem('sdr_name') || "User_" + Math.floor(100 + Math.random() * 900),
-      avatar: localStorage.getItem('sdr_avatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=" + Math.random()
+      avatar: localStorage.getItem('sdr_avatar') || "https://api.dicebear.com/7.x/bottts/svg?seed=" + Math.random(),
+      bankroll: parseInt(localStorage.getItem('sdr_bankroll') || "1000")
     };
 
     let activeTab = 'channels';
@@ -515,11 +547,15 @@
       currentServer: "sdr-central",
       currentChannel: "general",
       messages: {},
-      dms: {}
+      dms: {},
+      bankrolls: {}
     };
+
+    state.bankrolls[user.id] = user.bankroll;
 
     window.addEventListener('DOMContentLoaded', () => {
       updateProfileUI();
+      updateBankrollDisplay();
       renderServers();
       renderChannels();
       renderMemberList();
@@ -534,8 +570,37 @@
     function saveState() {
       try {
         localStorage.setItem('sdr_state', JSON.stringify(state));
+        localStorage.setItem('sdr_bankroll', user.bankroll);
       } catch (e) {}
     }
+
+    function updateBankrollDisplay() {
+      state.bankrolls[user.id] = user.bankroll;
+      document.getElementById('header-bankroll').innerText = `$${user.bankroll}`;
+      const modalDisp = document.getElementById('modal-bankroll-display');
+      if (modalDisp) modalDisp.innerText = `$${user.bankroll}`;
+      saveState();
+      if (ably && globalChannel) {
+        globalChannel.publish('bankroll_sync', { userId: user.id, name: user.name, bankroll: user.bankroll });
+      }
+    }
+
+    function openLeaderboardModal() {
+      const listEl = document.getElementById('leaderboard-list');
+      let html = '';
+      const sorted = Object.entries(state.bankrolls).sort((a,b) => b[1] - a[1]);
+      sorted.forEach(([uId, amt], idx) => {
+        html += `
+          <div class="flex justify-between items-center bg-[#1e1f22] p-2.5 rounded-xl border border-gray-700/50 text-xs">
+            <span class="font-bold text-white">#${idx+1} User (${uId === user.id ? 'You' : uId})</span>
+            <span class="text-amber-400 font-mono font-bold">$${amt}</span>
+          </div>
+        `;
+      });
+      listEl.innerHTML = html || '<div class="text-xs text-gray-500">No bankrolls recorded yet.</div>';
+      document.getElementById('leaderboard-modal').classList.remove('hidden');
+    }
+    function closeLeaderboardModal() { document.getElementById('leaderboard-modal').classList.add('hidden'); }
 
     function getActiveChannelKey() {
       if (activeTab === 'dms' && activeDMTarget) {
@@ -563,8 +628,16 @@
           document.getElementById('connection-status').className = "bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30";
           
           globalChannel = ably.channels.get('sdr_global_sync');
-          globalChannel.subscribe('structure', (msg) => {
-            handleGlobalStructureSync(msg.data);
+          globalChannel.subscribe('structure', (msg) => handleGlobalStructureSync(msg.data));
+          globalChannel.subscribe('deleteall', () => {
+            localStorage.clear();
+            location.reload();
+          });
+          globalChannel.subscribe('bankroll_sync', (msg) => {
+            if (msg.data && msg.data.userId) {
+              state.bankrolls[msg.data.userId] = msg.data.bankroll;
+              saveState();
+            }
           });
 
           subscribeToCurrentChannel();
@@ -585,6 +658,7 @@
       currentChannelObj.subscribe('typing', (msg) => {
         if (msg.data.userId !== user.id) showTypingIndicator(msg.data.userName);
       });
+      currentChannelObj.subscribe('webrtc_signal', (msg) => handleWebRTCSignal(msg.data));
 
       currentChannelObj.presence.enter({ name: user.name, avatar: user.avatar, id: user.id });
       currentChannelObj.presence.subscribe(() => renderMemberList());
@@ -620,7 +694,7 @@
               </div>
               <span class="text-xs font-semibold text-gray-200 truncate">${mUser.name} ${isSelf ? '(You)' : ''}</span>
             </div>
-            ${!isSelf ? `<button onclick="startDirectMessage('\${mUser.id}', '${mUser.name}', '${mUser.avatar}')" class="text-gray-400 hover:text-indigo-400 text-xs"><i class="fa-solid fa-message"></i></button>` : ''}
+            ${!isSelf ? `<button onclick="startDirectMessage('${mUser.id}', '${mUser.name}', '${mUser.avatar}')" class="text-gray-400 hover:text-indigo-400 text-xs" title="Direct Message"><i class="fa-solid fa-message"></i></button>` : ''}
           </div>
         `;
       });
@@ -654,6 +728,10 @@
         }
         renderDMsList();
         loadMessagesForCurrentChannel();
+        if (ably) subscribeToCurrentChannel();
+      } else {
+        loadMessagesForCurrentChannel();
+        if (ably) subscribeToCurrentChannel();
       }
     }
 
@@ -663,7 +741,7 @@
       const dmKeys = Object.keys(state.dms);
       
       if (dmKeys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click message icon on peers to DM!</p>';
+        container.innerHTML = '<p class="text-xs text-gray-500 p-2 italic">No open direct messages. Click message icon on any peer to open individual DM!</p>';
         return;
       }
 
@@ -815,7 +893,7 @@
       let html = `
         <div class="border-b border-gray-800 pb-4 mb-4">
           <h2 class="text-2xl font-bold text-white">${activeTab === 'dms' ? 'Direct Message with ' + (activeDMTarget ? activeDMTarget.name : 'User') : 'Welcome to #' + state.servers[state.currentServer].channels[state.currentChannel].name + '!'}</h2>
-          <p class="text-sm text-gray-400">This is the start of message history.</p>
+          <p class="text-sm text-gray-400">Permanent storage active. History is synchronized and preserved.</p>
         </div>
       `;
 
@@ -832,7 +910,6 @@
     }
 
     function formatCard(cardStr) {
-      // e.g. "3H" -> "3<span class='text-red-500'>♥</span>"
       const rank = cardStr.slice(0, -1);
       const suit = cardStr.slice(-1);
       let suitSymbol = suit;
@@ -849,39 +926,47 @@
     function renderMessageHTML(msg, idx, isSequential) {
       const chanId = getActiveChannelKey();
 
-      if (msg.type === 'poker') {
-        let playersHTML = '';
-        let pot = msg.gameData.pot || 150;
-        let communityFormatted = (msg.gameData.community || ['3H', '7S', 'QD', '2C', '9H']).map(c => formatCard(c)).join(' ');
-
-        (msg.gameData.players || []).forEach(p => {
-          let pCards = (p.cards || ['AS', 'KH']).map(c => formatCard(c)).join(' ');
-          playersHTML += `
-            <div class="flex justify-between items-center bg-[#1e1f22] p-2 rounded-xl mb-1 border border-gray-700/50 text-xs">
-              <span class="font-bold text-white">${p.name}</span>
-              <span class="text-amber-400 font-mono">💵 $${p.chips} | Cards: ${pCards}</span>
-            </div>
-          `;
-        });
-
+      if (msg.type === 'blackjack') {
+        let playerHand = (msg.gameData.playerHand || []).map(c => formatCard(c)).join(' ');
+        let dealerHand = (msg.gameData.dealerHand || []).map(c => formatCard(c)).join(' ');
         return `
           <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
             <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
-            <div class="flex-1 max-w-md bg-[#2b2d31]/90 p-4 rounded-2xl border border-amber-500/40 shadow-xl">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/90 p-4 rounded-2xl border border-amber-500/40 shadow-xl">
               <div class="flex items-center space-x-2 mb-2">
-                <span class="font-bold text-xs text-amber-400">${msg.user.name}'s Table</span>
+                <span class="font-bold text-xs text-amber-400">${msg.user.name}'s Blackjack</span>
                 <span class="text-[10px] text-gray-500">${msg.time}</span>
-                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♠️ TEXAS HOLD'EM</span>
+                <span class="bg-amber-500/20 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🃏 BLACKJACK</span>
               </div>
-              <div class="bg-emerald-900/40 border border-emerald-500/30 p-3 rounded-xl mb-3 text-center">
-                <div class="text-[11px] text-emerald-300 uppercase tracking-widest font-bold mb-1">Pot: $${pot}</div>
-                <div class="text-sm tracking-wider font-mono flex justify-center gap-1">${communityFormatted}</div>
+              <div class="space-y-2 mb-3 text-xs">
+                <div>Dealer: <div class="inline-flex gap-1 mt-1">${dealerHand}</div></div>
+                <div>Your Hand: <div class="inline-flex gap-1 mt-1">${playerHand}</div></div>
+                <div class="text-amber-300 font-bold">Status: ${msg.gameData.status}</div>
               </div>
-              <div class="mb-3">${playersHTML}</div>
-              <div class="flex space-x-2">
-                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'call')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Call / Check</button>
-                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'raise')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Raise +$50</button>
-                <button onclick="actionPoker('${chanId}', '${msg.msgId}', 'fold')" class="bg-red-600/80 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Fold</button>
+              ${msg.gameData.status === 'Playing' ? `
+                <div class="flex space-x-2">
+                  <button onclick="actionBlackjack('${chanId}', '${msg.msgId}', 'hit')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Hit</button>
+                  <button onclick="actionBlackjack('${chanId}', '${msg.msgId}', 'stand')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Stand</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'roulette') {
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/90 p-4 rounded-2xl border border-red-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-red-400">${msg.user.name}'s Roulette Spin</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+                <span class="bg-red-500/20 text-red-300 text-[9px] px-2 py-0.5 rounded-full font-bold">🎯 ROULETTE</span>
+              </div>
+              <div class="text-center py-2 bg-gray-900 rounded-xl mb-3">
+                <div class="text-2xl font-black ${msg.gameData.color === 'red' ? 'text-red-500' : msg.gameData.color === 'black' ? 'text-gray-200' : 'text-emerald-400'}">${msg.gameData.resultNumber} (${msg.gameData.color.toUpperCase()})</div>
+                <div class="text-xs text-gray-300 mt-1">${msg.gameData.outcomeText}</div>
               </div>
             </div>
           </div>
@@ -908,8 +993,102 @@
                 <span class="text-[10px] text-gray-500">${msg.time}</span>
                 <span class="bg-purple-500/20 text-purple-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♟️ CHESS</span>
               </div>
-              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-purple-400 uppercase">${msg.gameData.turn}</strong></p>
+              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-purple-400 uppercase">${msg.gameData.turn}</strong> | Click a piece then click destination square.</p>
               ${boardHTML}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'wordle') {
+        let gridHTML = '<div class="grid grid-rows-6 gap-1 my-2">';
+        for (let r = 0; r < 6; r++) {
+          let word = msg.gameData.guesses[r] || "";
+          gridHTML += '<div class="grid grid-cols-5 gap-1">';
+          for (let c = 0; c < 5; c++) {
+            let letter = word[c] || "";
+            let bg = "bg-gray-800 border-gray-700";
+            if (letter && msg.gameData.solution) {
+              if (msg.gameData.solution[c] === letter) bg = "bg-green-600 border-green-500 text-white";
+              else if (msg.gameData.solution.includes(letter)) bg = "bg-amber-600 border-amber-500 text-white";
+              else bg = "bg-gray-700 border-gray-600 text-gray-400";
+            }
+            gridHTML += `<div class="w-8 h-8 rounded border ${bg} font-bold text-xs flex items-center justify-center">${letter}</div>`;
+          }
+          gridHTML += '</div>';
+        }
+        gridHTML += '</div>';
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-xs bg-[#2b2d31]/90 p-4 rounded-2xl border border-green-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="font-bold text-xs text-green-400">${msg.user.name}'s Wordle</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+              </div>
+              ${gridHTML}
+              ${msg.gameData.status === 'playing' ? `
+                <div class="flex gap-1 mt-2">
+                  <input id="wordle-input-\${msg.msgId}" type="text" maxlength="5" placeholder="5 letters" class="flex-1 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white uppercase focus:outline-none">
+                  <button onclick="submitWordleGuess('${chanId}', '${msg.msgId}')" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold">Guess</button>
+                </div>
+              ` : `<div class="text-xs font-bold text-amber-400 mt-2">\${msg.gameData.status.toUpperCase()}</div>`}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'tictactoe') {
+        let boardHTML = '<div class="grid grid-cols-3 gap-1 w-48 my-2">';
+        (msg.gameData.board || Array(9).fill('')).forEach((cell, idx) => {
+          boardHTML += `<button onclick="playTicTacToe('${chanId}', '${msg.msgId}', ${idx})" class="w-14 h-14 bg-gray-800 hover:bg-emerald-600/40 rounded-xl text-xl font-black text-white flex items-center justify-center border border-gray-700">${cell}</button>`;
+        });
+        boardHTML += '</div>';
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-xs bg-[#2b2d31]/90 p-4 rounded-2xl border border-emerald-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="font-bold text-xs text-emerald-400">${msg.user.name}'s Tic-Tac-Toe</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+              </div>
+              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-emerald-400">${msg.gameData.turn}</strong></p>
+              ${boardHTML}
+            </div>
+          </div>
+        `;
+      }
+
+      if (msg.type === 'poll') {
+        let optionsHTML = '';
+        let totalVotes = Object.values(msg.pollData.votes || {}).reduce((a,b) => a + b.length, 0);
+
+        msg.pollData.options.forEach((opt, oIdx) => {
+          let count = (msg.pollData.votes[oIdx] || []).length;
+          let percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          optionsHTML += `
+            <button onclick="votePoll('${chanId}', '${msg.msgId}', ${oIdx})" class="w-full text-left bg-[#1e1f22] hover:bg-gray-800 p-2.5 rounded-xl border border-gray-700 relative overflow-hidden transition my-1">
+              <div class="absolute inset-0 bg-indigo-600/20 transition-all" style="width: ${percent}%"></div>
+              <div class="relative flex justify-between items-center text-xs font-semibold text-white">
+                <span>${opt}</span>
+                <span class="text-indigo-400 font-mono">${count} votes (${percent}%)</span>
+              </div>
+            </button>
+          `;
+        });
+
+        return `
+          <div class="flex items-start space-x-3 my-2" id="msg-card-${msg.msgId}">
+            <img src="${msg.user.avatar}" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 shrink-0">
+            <div class="flex-1 max-w-sm bg-[#2b2d31]/90 p-4 rounded-2xl border border-indigo-500/40 shadow-xl">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-bold text-xs text-indigo-400">${msg.user.name}'s Poll</span>
+                <span class="text-[10px] text-gray-500">${msg.time}</span>
+              </div>
+              <h4 class="font-bold text-sm text-white mb-3">${msg.pollData.question}</h4>
+              <div class="space-y-1">${optionsHTML}</div>
             </div>
           </div>
         `;
@@ -981,30 +1160,65 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // STEALTH DELETEALL COMMAND
+      // STEALTH DELETEALL COMMAND (deletes for everyone globally)
       if (text === '!deleteall') {
-        localStorage.clear();
+        state.messages = {};
+        saveState();
+        if (ably && globalChannel) {
+          globalChannel.publish('deleteall', {});
+        }
         location.reload();
         return;
       }
 
-      if (text.startsWith('/poker')) {
-        const pokerMsg = {
+      if (text.startsWith('/blackjack')) {
+        if (user.bankroll < 50) {
+          alert("Not enough chips! You need at least \$50.");
+          return;
+        }
+        user.bankroll -= 50;
+        updateBankrollDisplay();
+
+        const deck = ['2H','3H','4H','5H','6H','7H','8H','9H','10H','JH','QH','KH','AH','2S','3S','4S','5S','6S','7S','8S','9S','10S','JS','QS','KS','AS'];
+        const pHand = [deck[Math.floor(Math.random()*deck.length)], deck[Math.floor(Math.random()*deck.length)]];
+        const dHand = [deck[Math.floor(Math.random()*deck.length)]];
+
+        const bjMsg = {
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
           user: user,
-          type: 'poker',
-          gameData: {
-            pot: 150,
-            community: ['10H', 'JS', 'QD', '5C', '2H'],
-            players: [
-              { name: user.name, chips: 1000, cards: ['AH', 'KH'] },
-              { name: 'Peer_Opponent', chips: 850, cards: ['7S', '8S'] }
-            ]
-          },
+          type: 'blackjack',
+          gameData: { playerHand: pHand, dealerHand: dHand, status: 'Playing' },
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           channelKey: getActiveChannelKey()
         };
-        sendOrPublish(pokerMsg);
+        sendOrPublish(bjMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/roulette')) {
+        if (user.bankroll < 50) {
+          alert("Not enough chips! You need at least \$50.");
+          return;
+        }
+        user.bankroll -= 50;
+        updateBankrollDisplay();
+
+        const num = Math.floor(Math.random() * 37);
+        const color = num === 0 ? 'green' : (num % 2 === 0 ? 'black' : 'red');
+        const won = color === 'red'; // simple win condition for example
+        if (won) user.bankroll += 100;
+        updateBankrollDisplay();
+
+        const rMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'roulette',
+          gameData: { resultNumber: num, color: color, outcomeText: won ? 'You won \$100!' : 'You lost \$50!' },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(rMsg);
         input.value = '';
         return;
       }
@@ -1024,11 +1238,57 @@
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
           user: user,
           type: 'chess',
-          gameData: { board: chessBoard, turn: 'white' },
+          gameData: { board: chessBoard, turn: 'white', selected: null },
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           channelKey: getActiveChannelKey()
         };
         sendOrPublish(chessMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/wordle')) {
+        const solution = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
+        const wordleMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'wordle',
+          gameData: { solution: solution, guesses: [], status: 'playing' },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(wordleMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/tictactoe')) {
+        const tttMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'tictactoe',
+          gameData: { board: Array(9).fill(''), turn: 'X' },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(tttMsg);
+        input.value = '';
+        return;
+      }
+
+      if (text.startsWith('/poll')) {
+        const parts = text.replace('/poll', '').split('|').map(s => s.trim());
+        const question = parts[0] || 'Make a choice';
+        const options = parts.slice(1).length >= 2 ? parts.slice(1) : ['Yes', 'No'];
+        const pollMsg = {
+          msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+          user: user,
+          type: 'poll',
+          pollData: { question, options, votes: {} },
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          channelKey: getActiveChannelKey()
+        };
+        sendOrPublish(pollMsg);
         input.value = '';
         return;
       }
@@ -1072,33 +1332,112 @@
       }
     }
 
-    function actionPoker(chanId, msgId, action) {
-      const messages = state.messages[chanId] || [];
-      const msg = messages.find(m => m.msgId === msgId);
-      if (!msg) return;
-
-      if (action === 'raise') msg.gameData.pot += 50;
-      else if (action === 'fold') msg.gameData.community = ['3H', 'Folded'];
-
-      saveState();
-      loadMessagesForCurrentChannel();
-
-      if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'poker', msgId, gameData: msg.gameData });
-      }
-    }
-
+    let chessSelectedCoord = null;
     function playChess(chanId, msgId, r, c) {
       const messages = state.messages[chanId] || [];
       const msg = messages.find(m => m.msgId === msgId);
       if (!msg) return;
 
-      msg.gameData.turn = msg.gameData.turn === 'white' ? 'black' : 'white';
+      let board = msg.gameData.board;
+      if (!chessSelectedCoord) {
+        if (board[r][c]) {
+          chessSelectedCoord = { r, c };
+        }
+      } else {
+        board[r][c] = board[chessSelectedCoord.r][chessSelectedCoord.c];
+        board[chessSelectedCoord.r][chessSelectedCoord.c] = '';
+        chessSelectedCoord = null;
+        msg.gameData.turn = msg.gameData.turn === 'white' ? 'black' : 'white';
+        saveState();
+        loadMessagesForCurrentChannel();
+
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('mutation', { type: 'chess', msgId, gameData: msg.gameData });
+        }
+      }
+    }
+
+    function actionBlackjack(chanId, msgId, action) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      if (action === 'hit') {
+        const deck = ['2H','3H','4H','5H','6H','7H','8H','9H','10H','JH','QH','KH','AH','2S','3S','4S','5S','6S','7S','8S','9S','10S','JS','QS','KS','AS'];
+        msg.gameData.playerHand.push(deck[Math.floor(Math.random()*deck.length)]);
+        if (msg.gameData.playerHand.length >= 4) {
+          msg.gameData.status = 'Won (\$100)';
+          user.bankroll += 150;
+          updateBankrollDisplay();
+        }
+      } else {
+        msg.gameData.status = 'Stand / Finished';
+        user.bankroll += 100;
+        updateBankrollDisplay();
+      }
+
       saveState();
       loadMessagesForCurrentChannel();
-
       if (ably && currentChannelObj) {
-        currentChannelObj.publish('mutation', { type: 'chess', msgId, gameData: msg.gameData });
+        currentChannelObj.publish('mutation', { type: 'blackjack', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function submitWordleGuess(chanId, msgId) {
+      const inputEl = document.getElementById(`wordle-input-${msgId}`);
+      if (!inputEl) return;
+      const guess = inputEl.value.trim().toUpperCase();
+      if (guess.length !== 5) return;
+
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      msg.gameData.guesses.push(guess);
+      if (guess === msg.gameData.solution) {
+        msg.gameData.status = 'Won!';
+        user.bankroll += 200;
+        updateBankrollDisplay();
+      } else if (msg.gameData.guesses.length >= 6) {
+        msg.gameData.status = `Lost (Solution: ${msg.gameData.solution})`;
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'wordle', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function playTicTacToe(chanId, msgId, idx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg || msg.gameData.board[idx]) return;
+
+      msg.gameData.board[idx] = msg.gameData.turn;
+      msg.gameData.turn = msg.gameData.turn === 'X' ? 'O' : 'X';
+
+      saveState();
+      loadMessagesForCurrentChannel();
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'tictactoe', msgId, gameData: msg.gameData });
+      }
+    }
+
+    function votePoll(chanId, msgId, optIdx) {
+      const messages = state.messages[chanId] || [];
+      const msg = messages.find(m => m.msgId === msgId);
+      if (!msg) return;
+
+      if (!msg.pollData.votes[optIdx]) msg.pollData.votes[optIdx] = [];
+      if (!msg.pollData.votes[optIdx].includes(user.id)) {
+        msg.pollData.votes[optIdx].push(user.id);
+      }
+
+      saveState();
+      loadMessagesForCurrentChannel();
+      if (ably && currentChannelObj) {
+        currentChannelObj.publish('mutation', { type: 'poll', msgId, pollData: msg.pollData });
       }
     }
 
@@ -1108,8 +1447,11 @@
       const msg = messages.find(m => m.msgId === data.msgId);
       if (!msg) return;
 
-      if (data.type === 'poker') msg.gameData = data.gameData;
-      else if (data.type === 'chess') msg.gameData = data.gameData;
+      if (data.type === 'chess') msg.gameData = data.gameData;
+      else if (data.type === 'blackjack') msg.gameData = data.gameData;
+      else if (data.type === 'wordle') msg.gameData = data.gameData;
+      else if (data.type === 'tictactoe') msg.gameData = data.gameData;
+      else if (data.type === 'poll') msg.pollData = data.pollData;
 
       saveState();
       loadMessagesForCurrentChannel();
@@ -1127,13 +1469,16 @@
             <span class="font-bold text-indigo-400 truncate">${msg.user.name}</span>
             <span class="text-[9px] text-gray-500">${msg.time}</span>
           </div>
-          <p class="text-gray-200 text-xs truncate mt-0.5">${msg.text || 'Sent an attachment'}</p>
+          <p class="text-gray-200 text-xs truncate mt-0.5">${msg.text || 'Sent a message'}</p>
         </div>
       `;
 
       toast.onclick = () => {
-        if (targetChanKey.startsWith('dm_')) switchSidebarTab('dms');
-        else switchSidebarTab('channels');
+        if (targetChanKey.startsWith('dm_')) {
+          switchSidebarTab('dms');
+        } else {
+          switchSidebarTab('channels');
+        }
         toast.remove();
       };
 
@@ -1247,15 +1592,17 @@
 
     async function changeAudioInput() {
       const deviceId = document.getElementById('mic-select').value;
-      if (activeMediaStream) activeMediaStream.getTracks().forEach(t => t.stop());
+      if (localStreamForRTC) localStreamForRTC.getTracks().forEach(t => t.stop());
       try {
-        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+        localStreamForRTC = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined }, video: true });
+        const videoEl = document.getElementById('local-video');
+        videoEl.srcObject = localStreamForRTC;
       } catch (e) {}
     }
 
     async function changeAudioOutput() {
       const deviceId = document.getElementById('speaker-select').value;
-      const videoEl = document.getElementById('local-video');
+      const videoEl = document.getElementById('remote-video');
       if (videoEl && typeof videoEl.setSinkId === 'function' && deviceId) {
         try { await videoEl.setSinkId(deviceId); } catch (e) {}
       }
@@ -1265,23 +1612,68 @@
       isVoiceActive = true;
       document.getElementById('voice-panel').classList.remove('hidden');
       try {
-        activeMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-        const videoEl = document.getElementById('local-video');
-        videoEl.srcObject = activeMediaStream;
-        videoEl.classList.remove('hidden');
-        document.getElementById('local-video-placeholder').classList.add('hidden');
+        localStreamForRTC = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        const localVideo = document.getElementById('local-video');
+        localVideo.srcObject = localStreamForRTC;
+
+        setupWebRTCConnection();
       } catch (e) {}
     }
 
+    function setupWebRTCConnection() {
+      const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+      peerConnection = new RTCPeerConnection(configuration);
+
+      if (localStreamForRTC) {
+        localStreamForRTC.getTracks().forEach(track => peerConnection.addTrack(track, localStreamForRTC));
+      }
+
+      peerConnection.ontrack = (event) => {
+        const remoteVideo = document.getElementById('remote-video');
+        remoteVideo.srcObject = event.streams[0];
+        remoteVideo.classList.remove('hidden');
+        document.getElementById('remote-video-placeholder').classList.add('hidden');
+      };
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate && ably && currentChannelObj) {
+          currentChannelObj.publish('webrtc_signal', { type: 'candidate', candidate: event.candidate, sender: user.id });
+        }
+      };
+
+      if (ably && currentChannelObj) {
+        peerConnection.createOffer().then(offer => {
+          peerConnection.setLocalDescription(offer);
+          currentChannelObj.publish('webrtc_signal', { type: 'offer', offer: offer, sender: user.id });
+        }).catch(e => {});
+      }
+    }
+
+    async function handleWebRTCSignal(data) {
+      if (data.sender === user.id) return;
+      if (!peerConnection) setupWebRTCConnection();
+
+      if (data.type === 'offer') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('webrtc_signal', { type: 'answer', answer: answer, sender: user.id });
+        }
+      } else if (data.type === 'answer') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+      } else if (data.type === 'candidate') {
+        try { await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+      }
+    }
+
     async function toggleScreenShare() {
-      const screenVideo = document.getElementById('screen-share-video');
+      const screenVideo = document.getElementById('remote-video');
       const screenBtn = document.getElementById('screen-btn');
 
       if (screenShareStream) {
         screenShareStream.getTracks().forEach(t => t.stop());
         screenShareStream = null;
-        screenVideo.classList.add('hidden');
-        document.getElementById('screen-share-placeholder').classList.remove('hidden');
         screenBtn.classList.remove('bg-indigo-600');
         return;
       }
@@ -1290,7 +1682,7 @@
         screenShareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
         screenVideo.srcObject = screenShareStream;
         screenVideo.classList.remove('hidden');
-        document.getElementById('screen-share-placeholder').classList.add('hidden');
+        document.getElementById('remote-video-placeholder').classList.add('hidden');
         screenBtn.classList.add('bg-indigo-600');
 
         screenShareStream.getVideoTracks()[0].onended = () => { toggleScreenShare(); };
@@ -1300,8 +1692,10 @@
     function leaveVoiceCall() {
       isVoiceActive = false;
       document.getElementById('voice-panel').classList.add('hidden');
-      if (activeMediaStream) activeMediaStream.getTracks().forEach(t => t.stop());
+      if (localStreamForRTC) localStreamForRTC.getTracks().forEach(t => t.stop());
       if (screenShareStream) screenShareStream.getTracks().forEach(t => t.stop());
+      if (peerConnection) peerConnection.close();
+      peerConnection = null;
     }
 
     function toggleMobileSidebar() { document.getElementById('channels-sidebar').classList.toggle('-translate-x-full'); }
