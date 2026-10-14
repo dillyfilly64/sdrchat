@@ -322,11 +322,6 @@
     <div class="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto max-w-5xl mx-auto w-full items-center">
       <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
         <video id="local-video" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover"></video>
-        <div id="local-video-placeholder" class="flex flex-col items-center justify-center hidden">
-          <img id="call-avatar-main" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" class="w-24 h-24 rounded-full border-4 border-emerald-500 mb-3 bg-gray-900">
-          <span id="call-name-main" class="font-bold text-white text-lg">You</span>
-          <span class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-microphone mr-1"></i> Active Speaker</span>
-        </div>
       </div>
       <div class="bg-[#2b2d31] rounded-2xl aspect-video border border-gray-800 flex flex-col items-center justify-center relative overflow-hidden">
         <video id="remote-video" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
@@ -514,10 +509,9 @@
     let isSoundEnabled = true;
     let isVoiceActive = false;
     let typingTimer = null;
-    let activeMediaStream = null;
-    let screenShareStream = null;
-    let peerConnection = null;
     let localStreamForRTC = null;
+    let screenShareStream = null;
+    let peerConnections = {}; // Map of socket/client ID to RTCPeerConnection
 
     const WORDLE_DICTIONARY = ["REACT", "CLONE", "SDRCHAT", "AUDIO", "VOICE", "LIGHT", "CYBER", "PIXEL", "POWER", "GAMES", "IMAGE"];
 
@@ -630,7 +624,8 @@
           globalChannel = ably.channels.get('sdr_global_sync');
           globalChannel.subscribe('structure', (msg) => handleGlobalStructureSync(msg.data));
           globalChannel.subscribe('deleteall', () => {
-            localStorage.clear();
+            state.messages = {};
+            saveState();
             location.reload();
           });
           globalChannel.subscribe('bankroll_sync', (msg) => {
@@ -993,7 +988,7 @@
                 <span class="text-[10px] text-gray-500">${msg.time}</span>
                 <span class="bg-purple-500/20 text-purple-300 text-[9px] px-2 py-0.5 rounded-full font-bold">♟️ CHESS</span>
               </div>
-              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-purple-400 uppercase">${msg.gameData.turn}</strong> | Click a piece then click destination square.</p>
+              <p class="text-xs text-gray-300 mb-1">Turn: <strong class="text-purple-400 uppercase">${msg.gameData.turn}</strong> | Click a piece then click destination.</p>
               ${boardHTML}
             </div>
           </div>
@@ -1206,7 +1201,7 @@
 
         const num = Math.floor(Math.random() * 37);
         const color = num === 0 ? 'green' : (num % 2 === 0 ? 'black' : 'red');
-        const won = color === 'red'; // simple win condition for example
+        const won = color === 'red';
         if (won) user.bankroll += 100;
         updateBankrollDisplay();
 
@@ -1238,7 +1233,7 @@
           msgId: "m_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
           user: user,
           type: 'chess',
-          gameData: { board: chessBoard, turn: 'white', selected: null },
+          gameData: { board: chessBoard, turn: 'white' },
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           channelKey: getActiveChannelKey()
         };
@@ -1366,12 +1361,12 @@
         const deck = ['2H','3H','4H','5H','6H','7H','8H','9H','10H','JH','QH','KH','AH','2S','3S','4S','5S','6S','7S','8S','9S','10S','JS','QS','KS','AS'];
         msg.gameData.playerHand.push(deck[Math.floor(Math.random()*deck.length)]);
         if (msg.gameData.playerHand.length >= 4) {
-          msg.gameData.status = 'Won (\$100)';
+          msg.gameData.status = 'Won (\$150)';
           user.bankroll += 150;
           updateBankrollDisplay();
         }
       } else {
-        msg.gameData.status = 'Stand / Finished';
+        msg.gameData.status = 'Stand / Finished (\$100)';
         user.bankroll += 100;
         updateBankrollDisplay();
       }
@@ -1395,7 +1390,7 @@
 
       msg.gameData.guesses.push(guess);
       if (guess === msg.gameData.solution) {
-        msg.gameData.status = 'Won!';
+        msg.gameData.status = 'Won! (+\$200)';
         user.bankroll += 200;
         updateBankrollDisplay();
       } else if (msg.gameData.guesses.length >= 6) {
@@ -1616,54 +1611,64 @@
         const localVideo = document.getElementById('local-video');
         localVideo.srcObject = localStreamForRTC;
 
-        setupWebRTCConnection();
+        // Broadcast presence in voice channel to initiate WebRTC connections
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('webrtc_signal', { type: 'join_call', sender: user.id });
+        }
       } catch (e) {}
     }
 
-    function setupWebRTCConnection() {
+    function createPeerConnectionFor(remoteId) {
+      if (peerConnections[remoteId]) return peerConnections[remoteId];
+
       const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-      peerConnection = new RTCPeerConnection(configuration);
+      const pc = new RTCPeerConnection(configuration);
+      peerConnections[remoteId] = pc;
 
       if (localStreamForRTC) {
-        localStreamForRTC.getTracks().forEach(track => peerConnection.addTrack(track, localStreamForRTC));
+        localStreamForRTC.getTracks().forEach(track => pc.addTrack(track, localStreamForRTC));
       }
 
-      peerConnection.ontrack = (event) => {
+      pc.ontrack = (event) => {
         const remoteVideo = document.getElementById('remote-video');
         remoteVideo.srcObject = event.streams[0];
         remoteVideo.classList.remove('hidden');
         document.getElementById('remote-video-placeholder').classList.add('hidden');
       };
 
-      peerConnection.onicecandidate = (event) => {
+      pc.onicecandidate = (event) => {
         if (event.candidate && ably && currentChannelObj) {
-          currentChannelObj.publish('webrtc_signal', { type: 'candidate', candidate: event.candidate, sender: user.id });
+          currentChannelObj.publish('webrtc_signal', { type: 'candidate', candidate: event.candidate, sender: user.id, target: remoteId });
         }
       };
 
-      if (ably && currentChannelObj) {
-        peerConnection.createOffer().then(offer => {
-          peerConnection.setLocalDescription(offer);
-          currentChannelObj.publish('webrtc_signal', { type: 'offer', offer: offer, sender: user.id });
-        }).catch(e => {});
-      }
+      return pc;
     }
 
     async function handleWebRTCSignal(data) {
       if (data.sender === user.id) return;
-      if (!peerConnection) setupWebRTCConnection();
+      if (data.target && data.target !== user.id) return;
 
-      if (data.type === 'offer') {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
+      const remoteId = data.sender;
+      const pc = createPeerConnectionFor(remoteId);
+
+      if (data.type === 'join_call') {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
         if (ably && currentChannelObj) {
-          currentChannelObj.publish('webrtc_signal', { type: 'answer', answer: answer, sender: user.id });
+          currentChannelObj.publish('webrtc_signal', { type: 'offer', offer: offer, sender: user.id, target: remoteId });
+        }
+      } else if (data.type === 'offer') {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        if (ably && currentChannelObj) {
+          currentChannelObj.publish('webrtc_signal', { type: 'answer', answer: answer, sender: user.id, target: remoteId });
         }
       } else if (data.type === 'answer') {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
       } else if (data.type === 'candidate') {
-        try { await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+        try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
       }
     }
 
@@ -1694,8 +1699,8 @@
       document.getElementById('voice-panel').classList.add('hidden');
       if (localStreamForRTC) localStreamForRTC.getTracks().forEach(t => t.stop());
       if (screenShareStream) screenShareStream.getTracks().forEach(t => t.stop());
-      if (peerConnection) peerConnection.close();
-      peerConnection = null;
+      Object.values(peerConnections).forEach(pc => pc.close());
+      peerConnections = {};
     }
 
     function toggleMobileSidebar() { document.getElementById('channels-sidebar').classList.toggle('-translate-x-full'); }
@@ -1772,8 +1777,6 @@
     function updateProfileUI() {
       document.getElementById('user-name-bottom').innerText = user.name;
       document.getElementById('user-avatar-bottom').src = user.avatar;
-      document.getElementById('call-avatar-main').src = user.avatar;
-      document.getElementById('call-name-main').innerText = user.name;
     }
 
     function openCreateServerModal() { document.getElementById('server-modal').classList.remove('hidden'); }
